@@ -35,4 +35,11 @@ export class ApiResponse<T> {
   ): ApiResponse<null> {
     return new ApiResponse(code, message)
   }
+
+  static deleted(
+    code: ResponseCode = ResponseCode.DELETED,
+    message: ResponseMessage | string = ResponseMessage.DELETED,
+  ): ApiResponse<null> {
+    return new ApiResponse(code, message)
+  }
 }
