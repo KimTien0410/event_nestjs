@@ -10,7 +10,6 @@ import { Repository } from 'typeorm'
 import { UserEntity } from './entities/user.entity'
 import { User } from './domain/user'
 import { UserDto } from './dto/user.dto'
-import { UserUpdateDomain } from './domain/user-update.domain'
 
 @Injectable()
 export class UserService {
@@ -32,7 +31,7 @@ export class UserService {
     const userDomain = UserCreateDto.toDomain(createUserDto)
     const newUser = userDomain.toEntity()
     const savedUser = await this.userRepository.save(newUser)
-    const user = User.toDomain(savedUser)
+    const user = User.fromEntity(savedUser)
     return UserDto.fromDomain(user)
   }
 
@@ -42,7 +41,7 @@ export class UserService {
       return []
     }
     return users.map((user) => {
-      const userDomain = User.toDomain(user)
+      const userDomain = User.fromEntity(user)
       return UserDto.fromDomain(userDomain)
     })
   }
@@ -52,7 +51,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`)
     }
-    const userDomain = User.toDomain(user)
+    const userDomain = User.fromEntity(user)
     return UserDto.fromDomain(userDomain)
   }
 
@@ -64,7 +63,7 @@ export class UserService {
     const updateDomain = UserUpdateDto.toDomain(updateUserDto, id)
     const updatedUserEntity = updateDomain.toEntity(user, updateUserDto)
     const savedUser = await this.userRepository.save(updatedUserEntity)
-    const updatedUserDomain = User.toDomain(savedUser)
+    const updatedUserDomain = User.fromEntity(savedUser)
 
     return UserDto.fromDomain(updatedUserDomain)
   }
