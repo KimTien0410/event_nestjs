@@ -9,6 +9,7 @@ async function bootstrap() {
       prefix: 'EventManagement-KT:',
     }),
   })
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,6 +17,7 @@ async function bootstrap() {
       transform: true,
     }),
   )
+
   app.setGlobalPrefix(process.env.API_PREFIX ?? 'api/v1')
   const config = new DocumentBuilder()
     .setTitle('Event Management System')
@@ -23,6 +25,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('api/v1')
     .build()
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory, {
     jsonDocumentUrl: 'swagger/json',
@@ -30,6 +33,7 @@ async function bootstrap() {
       persistAuthorization: true,
     },
   })
+
   await app.listen(process.env.PORT ?? 4000)
 }
 void bootstrap()
