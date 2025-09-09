@@ -1,15 +1,23 @@
+import { UserEntity } from '../entities/user.entity'
+
 export class User {
   constructor(
     public readonly id: number,
     public name: string,
     public email: string,
-    public role: 'admin' | 'user',
     public password: string,
-    public createdAt: Date,
-    public updatedAt: Date,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
   ) {}
 
-  isAdmin(): boolean {
-    return this.role === 'admin'
+  static toDomain(userEntity: UserEntity) {
+    return new User(
+      userEntity.id,
+      userEntity.name,
+      userEntity.email,
+      userEntity.password,
+      userEntity.createdAt,
+      userEntity.updatedAt,
+    )
   }
 }

@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+import { UserCreateDto } from './dto/user-create.dto'
+import { UserUpdateDto } from './dto/user-update.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserEntity } from './entities/user.entity'
 import { User } from './domain/user'
-import { UserMapper } from './dto/user.mapper'
+import { UserDto } from './dto/user.dto'
+import { UserUpdateDomain } from './domain/user-update.domain'
 
 @Injectable()
 export class UserService {
@@ -14,40 +19,61 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const newUser = this.userRepository.create({
-      ...createUserDto,
-      role: 'user',
-    })
+  async isEmailExisting(email: string): Promise<boolean> {
+    const count = await this.userRepository.count({ where: { email } })
+    return count > 0
+  }
 
+  async create(createUserDto: UserCreateDto): Promise<UserDto> {
+    const emailExists = await this.isEmailExisting(createUserDto.email)
+    if (emailExists) {
+      throw new BadRequestException('Email already exists')
+    }
+    const userDomain = UserCreateDto.toDomain(createUserDto)
+    const newUser = userDomain.toEntity()
     const savedUser = await this.userRepository.save(newUser)
-    return UserMapper.toDomain(savedUser)
+    const user = User.toDomain(savedUser)
+    return UserDto.fromDomain(user)
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserDto[]> {
     const users = await this.userRepository.find()
-    return users.map((user) => UserMapper.toDomain(user))
+    if (users.length === 0) {
+      return []
+    }
+    return users.map((user) => {
+      const userDomain = User.toDomain(user)
+      return UserDto.fromDomain(userDomain)
+    })
   }
 
-  async findById(id: number): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { id } })
-    return user ? UserMapper.toDomain(user) : null
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User | null> {
+  async findById(id: number): Promise<UserDto> {
     const user = await this.userRepository.findOne({ where: { id } })
     if (!user) {
-      return null
+      throw new NotFoundException(`User with id ${id} not found`)
     }
-
-    Object.assign(user, updateUserDto)
-    const updatedUser = await this.userRepository.save(user)
-    return UserMapper.toDomain(updatedUser)
+    const userDomain = User.toDomain(user)
+    return UserDto.fromDomain(userDomain)
   }
 
-  async remove(id: number): Promise<boolean> {
-    const result = await this.userRepository.delete(id)
-    // Sử dụng toán tử ?? để fallback null/undefined về 0
-    return (result.affected ?? 0) > 0
+  async update(id: number, updateUserDto: UserUpdateDto): Promise<UserDto> {
+    const user = await this.userRepository.findOne({ where: { id } })
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`)
+    }
+    const updateDomain = UserUpdateDto.toDomain(updateUserDto, id)
+    const updatedUserEntity = updateDomain.toEntity(user, updateUserDto)
+    const savedUser = await this.userRepository.save(updatedUserEntity)
+    const updatedUserDomain = User.toDomain(savedUser)
+
+    return UserDto.fromDomain(updatedUserDomain)
+  }
+
+  async remove(id: number): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id } })
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`)
+    }
+    await this.userRepository.remove(user)
   }
 }

@@ -26,7 +26,7 @@ async function bootstrap() {
     .addTag('api/v1')
     .build()
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, documentFactory, {
     jsonDocumentUrl: 'swagger/json',
     swaggerOptions: {
