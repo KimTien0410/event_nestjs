@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common'
+import { useContainer } from 'class-validator'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,6 +19,8 @@ async function bootstrap() {
     }),
   )
 
+  useContainer(app.select(AppModule), { fallbackOnErrors: true })
+
   app.setGlobalPrefix(process.env.API_PREFIX ?? 'api/v1')
   const config = new DocumentBuilder()
     .setTitle('Event Management System')
@@ -26,7 +29,7 @@ async function bootstrap() {
     .addTag('api/v1')
     .build()
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = () => SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, documentFactory, {
     jsonDocumentUrl: 'swagger/json',
     swaggerOptions: {
