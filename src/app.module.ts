@@ -3,6 +3,11 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
+<<<<<<< Updated upstream
+=======
+import { UserModule } from './modules/user/user.module'
+import { ValidationModule } from './common/validation/validation.module'
+>>>>>>> Stashed changes
 
 @Module({
   imports: [
@@ -17,6 +22,11 @@ import { TypeOrmModule } from '@nestjs/typeorm'
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
+<<<<<<< Updated upstream
+=======
+    ValidationModule,
+    UserModule,
+>>>>>>> Stashed changes
   ],
 
   controllers: [AppController],
