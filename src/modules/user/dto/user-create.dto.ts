@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator'
-import { UserCreateDomain } from '../domain/user-create.domain'
+import { UserCreate } from '../domain/user-create.domain'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class UserCreateDto {
@@ -23,11 +23,7 @@ export class UserCreateDto {
   @MinLength(6)
   password: string
 
-  static toDomain(userCreateDto: UserCreateDto): UserCreateDomain {
-    return new UserCreateDomain(
-      userCreateDto.name,
-      userCreateDto.email,
-      userCreateDto.password,
-    )
+  static toDomain(userCreateDto: UserCreateDto): UserCreate {
+    return new UserCreate({ ...userCreateDto })
   }
 }

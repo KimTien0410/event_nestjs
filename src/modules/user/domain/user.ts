@@ -25,9 +25,6 @@ export class User {
     this.updatedAt = props.updatedAt
   }
 
-  /**
-   * Map từ UserEntity sang UserDomain
-   */
   static fromEntity(entity: UserEntity): User {
     return new User({
       id: entity.id,

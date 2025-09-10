@@ -35,4 +35,8 @@ export class UserDto {
     dto.updatedAt = user.updatedAt
     return dto
   }
+
+  static fromDomains(users: User[]): UserDto[] {
+    return users.map((user) => this.fromDomain(user))
+  }
 }

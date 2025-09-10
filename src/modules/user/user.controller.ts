@@ -19,17 +19,21 @@ export class UserController {
 
   @Post()
   async create(@Body() createUserDto: UserCreateDto): Promise<UserDto> {
-    return await this.userService.create(createUserDto)
+    const userCreate = UserCreateDto.toDomain(createUserDto)
+    const user = await this.userService.create(userCreate)
+    return UserDto.fromDomain(user)
   }
 
   @Get()
   async findAll(): Promise<UserDto[]> {
-    return await this.userService.findAll()
+    const users = await this.userService.findAll()
+    return UserDto.fromDomains(users)
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-    return await this.userService.findById(id)
+    const user = await this.userService.findById(id)
+    return UserDto.fromDomain(user)
   }
 
   @Patch(':id')
@@ -37,7 +41,9 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UserUpdateDto,
   ): Promise<UserDto> {
-    return await this.userService.update(id, updateUserDto)
+    const userUpdate = UserUpdateDto.toDomain(updateUserDto)
+    const user = await this.userService.update(id, userUpdate)
+    return UserDto.fromDomain(user)
   }
 
   @Delete(':id')

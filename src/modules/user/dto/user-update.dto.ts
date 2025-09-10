@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from 'class-validator'
-import { UserUpdateDomain } from '../domain/user-update.domain'
+import { UserUpdate } from '../domain/user-update.domain'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 
 export class UserUpdateDto {
@@ -11,7 +11,7 @@ export class UserUpdateDto {
   @IsString()
   name?: string
 
-  static toDomain(userUpdateDto: UserUpdateDto, id: number): UserUpdateDomain {
-    return new UserUpdateDomain(id, userUpdateDto.name)
+  static toDomain(userUpdateDto: UserUpdateDto): UserUpdate {
+    return new UserUpdate({ ...userUpdateDto })
   }
 }
