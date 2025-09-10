@@ -17,9 +17,19 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async isEmailExisting(email: string): Promise<boolean> {
+  private async isEmailExisting(email: string): Promise<boolean> {
 
     return  await this.userRepository.existsBy({ email });
+  }
+
+  private async checkUserExists(id: number): Promise<UserEntity> {
+    const userEntity = await this.userRepository.findOneBy({ id });
+
+    if (!userEntity) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return userEntity;
   }
 
   async create(userCreate: UserCreate): Promise<User> {
@@ -37,25 +47,20 @@ export class UserService {
   }
 
   async findAll(): Promise<User[]> {
-    return User.fromEntities(await this.userRepository.find());
+    return User.fromEntities(
+      await this.userRepository.find()
+    );
   }
 
   async findById(id: number): Promise<User> {
-    const userEntity = await this.userRepository.findOneBy({ id });
 
-    if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-
-    return User.fromEntity(userEntity);
+    return User.fromEntity(
+      await this.checkUserExists(id)
+    );
   }
 
   async update(id: number, userUpdate: UserUpdate): Promise<User> {
-    const userEntity = await this.userRepository.findOneBy({ id });
-
-    if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+    const userEntity = await this.checkUserExists(id);
 
     return User.fromEntity(
       await this.userRepository.save(
@@ -65,12 +70,6 @@ export class UserService {
   }
 
   async remove(id: number): Promise<void> {
-    const userEntity = await this.userRepository.findOneBy({ id });
-
-    if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-
-    await this.userRepository.remove(userEntity);
+    await this.userRepository.remove(await this.checkUserExists(id));
   }
 }

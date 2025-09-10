@@ -21,7 +21,7 @@ export class UserController {
   async create(@Body() createUserDto: UserCreateDto): Promise<UserDto> {
     return UserDto.fromDomain(
       await this.userService.create(
-        UserCreateDto.toDomain(createUserDto)
+        UserCreateDto.toUserCreate(createUserDto)
       )
     );
   }
@@ -46,7 +46,7 @@ export class UserController {
     @Body() updateUserDto: UserUpdateDto,
   ): Promise<UserDto> {
     return UserDto.fromDomain(
-      await this.userService.update(id, UserUpdateDto.toDomain(updateUserDto))
+      await this.userService.update(id, UserUpdateDto.toUserUpdate(updateUserDto))
     );
   }
 

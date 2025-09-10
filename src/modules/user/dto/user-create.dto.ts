@@ -23,7 +23,11 @@ export class UserCreateDto {
   @MinLength(6)
   password: string;
 
-  static toDomain(userCreateDto: UserCreateDto): UserCreate {
-    return { ...userCreateDto };
+  static toUserCreate(userCreateDto: UserCreateDto): UserCreate {
+    return {
+      name: userCreateDto.name,
+      email: userCreateDto.email,
+      password: userCreateDto.password
+    };
   }
 }

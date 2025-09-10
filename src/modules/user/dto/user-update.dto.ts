@@ -11,7 +11,9 @@ export class UserUpdateDto {
   @IsString()
   name?: string;
 
-  static toDomain(userUpdateDto: UserUpdateDto): UserUpdate {
-    return { ...userUpdateDto }
+  static toUserUpdate(userUpdateDto: UserUpdateDto): UserUpdate {
+    return {
+      name: userUpdateDto.name
+    };
   }
 }
