@@ -63,9 +63,7 @@ export class UserService {
     const userEntity = await this.checkUserExists(id);
 
     return User.fromEntity(
-      await this.userRepository.save(
-        UserUpdate.toEntity(userUpdate)
-      )
+      await this.userRepository.save(UserUpdate.toEntity(userEntity,userUpdate))
     );
   }
 
