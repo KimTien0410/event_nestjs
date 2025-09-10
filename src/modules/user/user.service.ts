@@ -39,11 +39,8 @@ export class UserService {
 
     return User.fromEntity(
       await this.userRepository.save({
-        id: userEntity.id,
-        name: userUpdate.name ?? userEntity.name,
-        email: userEntity.email,
-        createdAt: userEntity.createdAt,
-        updatedAt: new Date(),
+        ...userEntity,
+        ...UserUpdate.toEntity(userUpdate),
       }),
     );
   }
