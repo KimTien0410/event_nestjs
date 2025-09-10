@@ -35,10 +35,16 @@ export class UserService {
   }
 
   async update(id: number, userUpdate: UserUpdate): Promise<User> {
-    await this.findUserOrThrow(id);
+    const userEntity = await this.findUserOrThrow(id);
 
     return User.fromEntity(
-      await this.userRepository.save(UserUpdate.toEntity(userUpdate)),
+      await this.userRepository.save({
+        id: userEntity.id,
+        name: userUpdate.name ?? userEntity.name,
+        email: userEntity.email,
+        createdAt: userEntity.createdAt,
+        updatedAt: new Date(),
+      }),
     );
   }
 

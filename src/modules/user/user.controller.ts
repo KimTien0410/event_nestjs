@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserCreateDto } from './dto/user-create.dto';
@@ -47,6 +49,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: number): Promise<void> {
     await this.userService.remove(id);
   }
