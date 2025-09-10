@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserCreateDto } from './dto/user-create.dto';
