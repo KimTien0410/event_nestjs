@@ -18,9 +18,9 @@ export class UserService {
   ) {}
 
   async create(userCreate: UserCreate): Promise<User> {
-    const emailExists = await this.isEmailExisting(userCreate.email);
+    await this.verifyEmailIsNotExisting(userCreate.email);
     const userEntity = await this.userRepository.save(
-      UserCreate.toEntity(userCreate),
+      this.userRepository.create(UserCreate.toEntity(userCreate)),
     );
 
     return User.fromEntity(userEntity);
@@ -38,9 +38,7 @@ export class UserService {
     const userEntity = await this.findUserOrThrow(id);
 
     return User.fromEntity(
-      await this.userRepository.save(
-        UserUpdate.toEntity(userEntity, userUpdate),
-      ),
+      await this.userRepository.save(UserUpdate.toEntity(userUpdate)),
     );
   }
 
@@ -48,11 +46,10 @@ export class UserService {
     await this.userRepository.remove(await this.findUserOrThrow(id));
   }
 
-  private async isEmailExisting(email: string): Promise<boolean> {
+  private async verifyEmailIsNotExisting(email: string): Promise<void> {
     if (await this.userRepository.existsBy({ email })) {
       throw new BadRequestException('Email already exists');
     }
-    return false;
   }
 
   private async findUserOrThrow(id: number): Promise<UserEntity> {
