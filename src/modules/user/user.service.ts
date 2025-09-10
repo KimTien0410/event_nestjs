@@ -2,13 +2,13 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { UserEntity } from './entities/user.entity'
-import { User } from './domain/user'
-import { UserUpdate } from './domain/user-update.domain'
-import { UserCreate } from './domain/user-create.domain'
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserEntity } from './entities/user.entity';
+import { User } from './domain/user';
+import { UserUpdate } from './domain/user-update.domain';
+import { UserCreate } from './domain/user-create.domain';
 
 @Injectable()
 export class UserService {
@@ -17,12 +17,45 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  private async isEmailExisting(email: string): Promise<boolean> {
+  async create(userCreate: UserCreate): Promise<User> {
+    const emailExists = await this.isEmailExisting(userCreate.email);
+    const userEntity = await this.userRepository.save(
+      UserCreate.toEntity(userCreate),
+    );
 
-    return  await this.userRepository.existsBy({ email });
+    return User.fromEntity(userEntity);
   }
 
-  private async checkUserExists(id: number): Promise<UserEntity> {
+  async findAll(): Promise<User[]> {
+    return User.fromEntities(await this.userRepository.find());
+  }
+
+  async findById(id: number): Promise<User> {
+    return User.fromEntity(await this.findUserOrThrow(id));
+  }
+
+  async update(id: number, userUpdate: UserUpdate): Promise<User> {
+    const userEntity = await this.findUserOrThrow(id);
+
+    return User.fromEntity(
+      await this.userRepository.save(
+        UserUpdate.toEntity(userEntity, userUpdate),
+      ),
+    );
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.userRepository.remove(await this.findUserOrThrow(id));
+  }
+
+  private async isEmailExisting(email: string): Promise<boolean> {
+    if (await this.userRepository.existsBy({ email })) {
+      throw new BadRequestException('Email already exists');
+    }
+    return false;
+  }
+
+  private async findUserOrThrow(id: number): Promise<UserEntity> {
     const userEntity = await this.userRepository.findOneBy({ id });
 
     if (!userEntity) {
@@ -30,44 +63,5 @@ export class UserService {
     }
 
     return userEntity;
-  }
-
-  async create(userCreate: UserCreate): Promise<User> {
-    const emailExists = await this.isEmailExisting(userCreate.email);
-
-    if (emailExists) {
-      throw new BadRequestException('Email already exists');
-    }
-
-    const userEntity = await this.userRepository.save(
-      UserCreate.toEntity(userCreate)
-    );
-
-    return User.fromEntity(userEntity);
-  }
-
-  async findAll(): Promise<User[]> {
-    return User.fromEntities(
-      await this.userRepository.find()
-    );
-  }
-
-  async findById(id: number): Promise<User> {
-
-    return User.fromEntity(
-      await this.checkUserExists(id)
-    );
-  }
-
-  async update(id: number, userUpdate: UserUpdate): Promise<User> {
-    const userEntity = await this.checkUserExists(id);
-
-    return User.fromEntity(
-      await this.userRepository.save(UserUpdate.toEntity(userEntity,userUpdate))
-    );
-  }
-
-  async remove(id: number): Promise<void> {
-    await this.userRepository.remove(await this.checkUserExists(id));
   }
 }

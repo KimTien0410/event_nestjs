@@ -1,6 +1,6 @@
-import { IsOptional, IsString } from 'class-validator'
-import { UserUpdate } from '../domain/user-update.domain'
-import { ApiPropertyOptional } from '@nestjs/swagger'
+import { IsOptional, IsString } from 'class-validator';
+import { UserUpdate } from '../domain/user-update.domain';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserUpdateDto {
   @ApiPropertyOptional({

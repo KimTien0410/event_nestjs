@@ -32,6 +32,8 @@ export default tseslint.config(
       'omitLastInOneLineBlock': true,
       'omitLastInOneLineClassBody': true,
       'beforeStatementContinuationChars': 'never',
+       semi: ['error', 'always'],
+      '@typescript-eslint/semi': ['error', 'always'],
     },
   },
 );

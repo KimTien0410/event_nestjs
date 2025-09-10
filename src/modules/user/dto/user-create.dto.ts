@@ -1,6 +1,6 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator'
-import { UserCreate } from '../domain/user-create.domain'
-import { ApiProperty } from '@nestjs/swagger'
+import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { UserCreate } from '../domain/user-create.domain';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserCreateDto {
   @ApiProperty({ example: 'John Doe', description: 'Full name of the user' })

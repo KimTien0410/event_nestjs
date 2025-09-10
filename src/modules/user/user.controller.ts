@@ -7,11 +7,11 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-} from '@nestjs/common'
-import { UserService } from './user.service'
-import { UserCreateDto } from './dto/user-create.dto'
-import { UserUpdateDto } from './dto/user-update.dto'
-import { UserDto } from './dto/user.dto'
+} from '@nestjs/common';
+import { UserService } from './user.service';
+import { UserCreateDto } from './dto/user-create.dto';
+import { UserUpdateDto } from './dto/user-update.dto';
+import { UserDto } from './dto/user.dto';
 
 @Controller('users')
 export class UserController {
@@ -34,7 +34,7 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
+  async findOne(@Param('id') id: number): Promise<UserDto> {
     return UserDto.fromDomain(
       await this.userService.findById(id)
     );
@@ -42,7 +42,7 @@ export class UserController {
 
   @Patch(':id')
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: number,
     @Body() updateUserDto: UserUpdateDto,
   ): Promise<UserDto> {
     return UserDto.fromDomain(
