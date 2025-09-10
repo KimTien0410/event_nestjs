@@ -19,21 +19,25 @@ export class UserController {
 
   @Post()
   async create(@Body() createUserDto: UserCreateDto): Promise<UserDto> {
-    const userCreate = UserCreateDto.toDomain(createUserDto)
-    const user = await this.userService.create(userCreate)
-    return UserDto.fromDomain(user)
+    return UserDto.fromDomain(
+      await this.userService.create(
+        UserCreateDto.toDomain(createUserDto)
+      )
+    );
   }
 
   @Get()
   async findAll(): Promise<UserDto[]> {
-    const users = await this.userService.findAll()
-    return UserDto.fromDomains(users)
+    return UserDto.fromDomains(
+      await this.userService.findAll()
+    );
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-    const user = await this.userService.findById(id)
-    return UserDto.fromDomain(user)
+    return UserDto.fromDomain(
+      await this.userService.findById(id)
+    );
   }
 
   @Patch(':id')
@@ -41,13 +45,13 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UserUpdateDto,
   ): Promise<UserDto> {
-    const userUpdate = UserUpdateDto.toDomain(updateUserDto)
-    const user = await this.userService.update(id, userUpdate)
-    return UserDto.fromDomain(user)
+    return UserDto.fromDomain(
+      await this.userService.update(id, UserUpdateDto.toDomain(updateUserDto))
+    );
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.userService.remove(id)
+    await this.userService.remove(id);
   }
 }

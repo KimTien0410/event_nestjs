@@ -18,50 +18,59 @@ export class UserService {
   ) {}
 
   async isEmailExisting(email: string): Promise<boolean> {
-    const count = await this.userRepository.count({ where: { email } })
-    return count > 0
+
+    return  await this.userRepository.existsBy({ email });
   }
 
   async create(userCreate: UserCreate): Promise<User> {
-    const emailExists = await this.isEmailExisting(userCreate.email)
+    const emailExists = await this.isEmailExisting(userCreate.email);
+
     if (emailExists) {
-      throw new BadRequestException('Email already exists')
+      throw new BadRequestException('Email already exists');
     }
-    const userEntity = await this.userRepository.save(userCreate.toEntity())
-    return User.fromEntity(userEntity)
+
+    const userEntity = await this.userRepository.save(
+      UserCreate.toEntity(userCreate)
+    );
+
+    return User.fromEntity(userEntity);
   }
 
   async findAll(): Promise<User[]> {
-    const userEntitys = await this.userRepository.find()
-    if (userEntitys.length === 0) {
-      return []
-    }
-    return userEntitys.map((user) => User.fromEntity(user))
+    return User.fromEntities(await this.userRepository.find());
   }
 
   async findById(id: number): Promise<User> {
-    const userEntity = await this.userRepository.findOne({ where: { id } })
+    const userEntity = await this.userRepository.findOneBy({ id });
+
     if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`)
+      throw new NotFoundException(`User with id ${id} not found`);
     }
-    return User.fromEntity(userEntity)
+
+    return User.fromEntity(userEntity);
   }
 
   async update(id: number, userUpdate: UserUpdate): Promise<User> {
-    const userEntity = await this.userRepository.findOne({ where: { id } })
+    const userEntity = await this.userRepository.findOneBy({ id });
+
     if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`)
+      throw new NotFoundException(`User with id ${id} not found`);
     }
-    const userEntityUpdate = userUpdate.toEntity(userEntity, userUpdate)
-    await this.userRepository.save(userEntityUpdate)
-    return User.fromEntity(userEntity)
+
+    return User.fromEntity(
+      await this.userRepository.save(
+        UserUpdate.toEntity(userUpdate)
+      )
+    );
   }
 
   async remove(id: number): Promise<void> {
-    const userEntity = await this.userRepository.findOne({ where: { id } })
+    const userEntity = await this.userRepository.findOneBy({ id });
+
     if (!userEntity) {
-      throw new NotFoundException(`User with id ${id} not found`)
+      throw new NotFoundException(`User with id ${id} not found`);
     }
-    await this.userRepository.remove(userEntity)
+
+    await this.userRepository.remove(userEntity);
   }
 }

@@ -1,37 +1,27 @@
 import { UserEntity } from '../entities/user.entity'
 
 export class User {
-  readonly id: number
+  readonly id: number;
 
-  readonly name: string
+  readonly name: string;
 
-  readonly email: string
+  readonly email: string;
 
-  readonly createdAt: Date
+  readonly createdAt: Date;
 
-  readonly updatedAt: Date
-
-  private constructor(props: {
-    id: number
-    name: string
-    email: string
-    createdAt: Date
-    updatedAt: Date
-  }) {
-    this.id = props.id
-    this.name = props.name
-    this.email = props.email
-    this.createdAt = props.createdAt
-    this.updatedAt = props.updatedAt
-  }
+  readonly updatedAt: Date;
 
   static fromEntity(entity: UserEntity): User {
-    return new User({
+    return {
       id: entity.id,
       name: entity.name,
       email: entity.email,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-    })
+    };
+  }
+
+  static fromEntities(entities: UserEntity[]): User[] {
+    return entities.map((entity) => this.fromEntity(entity));
   }
 }

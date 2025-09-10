@@ -9,9 +9,9 @@ export class UserUpdateDto {
   })
   @IsOptional()
   @IsString()
-  name?: string
+  name?: string;
 
   static toDomain(userUpdateDto: UserUpdateDto): UserUpdate {
-    return new UserUpdate({ ...userUpdateDto })
+    return { ...userUpdateDto }
   }
 }
