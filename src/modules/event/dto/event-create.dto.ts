@@ -35,14 +35,10 @@ export class EventCreateDto {
     example: '2023-09-15',
     description: 'Date of the event (YYYY-MM-DD)',
   })
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
-  date: Date;
-
   @ApiProperty({
-    example: '09:00:00',
-    description: 'Start time of the event (HH:MM:SS)',
+    example: '2025-09-15T09:00:00.000Z',
+    description:
+      'Start time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
   })
   @IsNotEmpty()
   @IsDate()
@@ -50,11 +46,11 @@ export class EventCreateDto {
   timeStart: Date;
 
   @ApiProperty({
-    example: '17:00:00',
-    description: 'End time of the event (HH:MM:SS)',
+    example: '2025-09-15T09:00:00.000Z',
+    description: 'End time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
   })
-  @IsDate()
   @IsNotEmpty()
+  @IsDate()
   @Type(() => Date)
   timeEnd: Date;
 
@@ -107,7 +103,6 @@ export class EventCreateDto {
     return {
       title: eventCreateDto.title,
       description: eventCreateDto.description,
-      date: eventCreateDto.date,
       timeStart: eventCreateDto.timeStart,
       timeEnd: eventCreateDto.timeEnd,
       venue: eventCreateDto.venue,

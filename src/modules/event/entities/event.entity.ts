@@ -19,13 +19,10 @@ export class EventEntity {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ type: 'date' })
-  date: Date;
-
-  @Column({ type: 'time' })
+  @Column({ type: 'timestamp' })
   timeStart: Date;
 
-  @Column({ type: 'time' })
+  @Column({ type: 'timestamp' })
   timeEnd: Date;
 
   @Column({ nullable: true })

@@ -7,8 +7,6 @@ export class EventCreate {
 
   readonly description?: string;
 
-  readonly date: Date;
-
   readonly timeStart: Date;
 
   readonly timeEnd: Date;
@@ -27,7 +25,6 @@ export class EventCreate {
     return {
       title: eventCreate.title,
       description: eventCreate.description,
-      date: eventCreate.date,
       timeStart: eventCreate.timeStart,
       timeEnd: eventCreate.timeEnd,
       venue: eventCreate.venue,

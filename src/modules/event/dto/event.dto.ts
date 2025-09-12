@@ -23,19 +23,13 @@ export class EventDto {
   description: string;
 
   @ApiProperty({
-    example: '2023-09-15',
-    description: 'Date of the event (YYYY-MM-DD)',
-  })
-  date: Date;
-
-  @ApiProperty({
-    example: '09:00',
+    example: '2025-09-15T09:00:00.000Z',
     description: 'Start time of the event (HH:MM)',
   })
   timeStart: Date;
 
   @ApiProperty({
-    example: '17:00',
+    example: '2025-09-15T11:00:00.000Z',
     description: 'End time of the event (HH:MM)',
   })
   timeEnd: Date;
@@ -83,7 +77,6 @@ export class EventDto {
       id: event.id,
       title: event.title,
       description: event.description,
-      date: event.date,
       timeStart: event.timeStart,
       timeEnd: event.timeEnd,
       venue: event.venue,

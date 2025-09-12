@@ -21,8 +21,7 @@ export class EventService {
   ) {}
 
   async create(eventCreate: EventCreate): Promise<Event> {
-    this.validateEventDateAndTime(
-      eventCreate.date,
+    this.validateEventTime(
       eventCreate.timeStart,
       eventCreate.timeEnd,
     );
@@ -43,23 +42,18 @@ export class EventService {
   }
 
   async update(id: number, updateEvent: EventUpdate): Promise<Event> {
-    const eventEntity = this.findEventOrThrow(id);
-    this.validateEventDateAndTime(
-      updateEvent.date,
+    const eventEntity = await this.findEventOrThrow(id);
+    this.validateEventTime(
       updateEvent.timeStart,
       updateEvent.timeEnd,
     );
 
-    const toUpdate = await this.eventRepository.preload({
-      id,
+    console.log('eventEntity', eventEntity);
+    
+    return Event.fromEntity(await this.eventRepository.save({
+      ...eventEntity,
       ...EventUpdate.toEntity(updateEvent),
-    });
-
-    if (!toUpdate) {
-      throw new NotFoundException(`Event ${id} not found`);
-    }
-
-    return Event.fromEntity(await this.eventRepository.save(toUpdate));
+    }));
   }
 
   async remove(id: number): Promise<void> {
@@ -76,33 +70,16 @@ export class EventService {
     return eventEntity;
   }
 
-  private validateEventDateAndTime(date: Date, timeStart: Date, timeEnd: Date) {
-    const currentDate = new Date();
-    currentDate.setHours(currentDate.getHours() + 7); 
+  private validateEventTime(startTime: Date, endTime: Date) {
+  const now = new Date();
 
-    const currentDateOnly = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      currentDate.getDate(),
-    );
-    const eventDateOnly = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-    );
-
-    if (eventDateOnly < currentDateOnly) {
-      throw new BadRequestException(
-        'Event date must be today or in the future',
-      );
-    }
-
-    if (eventDateOnly >= currentDateOnly) {
-      if (timeStart >= timeEnd) {
-        throw new BadRequestException(
-          'Event start time must be before end time',
-        );
-      }
-    }
+  if (startTime < now) {
+    throw new BadRequestException('Start time must be in the future');
   }
+
+  if (endTime <= startTime) {
+    throw new BadRequestException('End time must be after start time');
+  }
+}
+
 }

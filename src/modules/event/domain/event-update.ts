@@ -7,8 +7,6 @@ export class EventUpdate {
 
   readonly description?: string;
 
-  readonly date: Date;
-
   readonly timeStart: Date;
 
   readonly timeEnd: Date;
@@ -27,7 +25,6 @@ export class EventUpdate {
     return {
       title: eventUpdate.title,
       description: eventUpdate.description,
-      date: eventUpdate.date,
       timeStart: eventUpdate.timeStart,
       timeEnd: eventUpdate.timeEnd,
       venue: eventUpdate.venue,

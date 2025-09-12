@@ -9,8 +9,6 @@ export class Event {
 
   readonly description: string;
 
-  readonly date: Date;
-
   readonly timeStart: Date;
 
   readonly timeEnd: Date;
@@ -34,7 +32,6 @@ export class Event {
       id: eventEntity.id,
       title: eventEntity.title,
       description: eventEntity.description,
-      date: eventEntity.date,
       timeStart: eventEntity.timeStart,
       timeEnd: eventEntity.timeEnd,
       venue: eventEntity.venue,
