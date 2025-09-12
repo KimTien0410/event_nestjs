@@ -31,12 +31,15 @@ export class EventController {
 
   @Get()
   async findAll(): Promise<EventDto[]> {
-    return EventDto.fromDomains(await this.eventService.findAll());
+    return EventDto.fromDomains(
+      await this.eventService.findAll()
+    );
   }
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<EventDto> {
-    return EventDto.fromDomain(await this.eventService.findOne(id));
+    return EventDto.fromDomain(
+      await this.eventService.findOne(id));
   }
 
   @Put(':id')
