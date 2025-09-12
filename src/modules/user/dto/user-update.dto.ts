@@ -1,5 +1,5 @@
 import { IsOptional, IsString } from 'class-validator';
-import { UserUpdate } from '../domain/user-update.domain';
+import { UserUpdate } from '../domain/user-update';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserUpdateDto {
@@ -13,7 +13,7 @@ export class UserUpdateDto {
 
   static toUserUpdate(userUpdateDto: UserUpdateDto): UserUpdate {
     return {
-      name: userUpdateDto.name
+      name: userUpdateDto.name,
     };
   }
 }

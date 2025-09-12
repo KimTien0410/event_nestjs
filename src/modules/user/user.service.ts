@@ -7,8 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { User } from './domain/user';
-import { UserUpdate } from './domain/user-update.domain';
-import { UserCreate } from './domain/user-create.domain';
+import { UserUpdate } from './domain/user-update';
+import { UserCreate } from './domain/user-create';
 
 @Injectable()
 export class UserService {
