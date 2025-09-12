@@ -9,8 +9,9 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { EventStatus } from 'src/common/enums/event-status';
-import { EventType } from 'src/common/enums/event-type';
+import { EventStatus } from 'src/modules/event/domain/event-status';
+import { EventType } from 'src/modules/event/domain/event-type';
+import { Type } from 'class-transformer';
 
 export class EventUpdateDto {
   @ApiProperty({
@@ -33,22 +34,25 @@ export class EventUpdateDto {
     example: '2023-09-15',
     description: 'Date of the event (YYYY-MM-DD)',
   })
-  @IsDateString()
-  date: string;
+  @IsDate()
+  @Type(() => Date)
+  date: Date;
 
   @ApiProperty({
     example: '09:00',
     description: 'Start time of the event (HH:MM)',
   })
-  @IsString()
-  timeStart: string;
+  @IsDate()
+  @Type(() => Date)
+  timeStart: Date;
 
   @ApiProperty({
-    example: '17:00',
-    description: 'End time of the event (HH:MM)',
+    example: '17:00:00',
+    description: 'End time of the event (HH:MM:SS)',
   })
-  @IsString()
-  timeEnd: string;
+  @IsDateString()
+  @Type(() => Date)
+  timeEnd: Date;
 
   @ApiProperty({
     example: 'Convention Center, Hall A',
@@ -95,7 +99,7 @@ export class EventUpdateDto {
     return {
       title: eventUpdateDto.title,
       description: eventUpdateDto.description,
-      date: new Date(eventUpdateDto.date),
+      date: eventUpdateDto.date,
       timeStart: eventUpdateDto.timeStart,
       timeEnd: eventUpdateDto.timeEnd,
       venue: eventUpdateDto.venue,

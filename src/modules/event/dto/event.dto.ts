@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Event } from '../domain/event.domain';
-import { EventStatus } from 'src/common/enums/event-status';
-import { EventType } from 'src/common/enums/event-type';
+import { Event } from '../domain/event';
+import { EventStatus } from 'src/modules/event/domain/event-status';
+import { EventType } from 'src/modules/event/domain/event-type';
 
 export class EventDto {
   @ApiProperty({
@@ -32,13 +32,13 @@ export class EventDto {
     example: '09:00',
     description: 'Start time of the event (HH:MM)',
   })
-  timeStart: string;
+  timeStart: Date;
 
   @ApiProperty({
     example: '17:00',
     description: 'End time of the event (HH:MM)',
   })
-  timeEnd: string;
+  timeEnd: Date;
 
   @ApiProperty({
     example: 'Convention Center, Hall A',

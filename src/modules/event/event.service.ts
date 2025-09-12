@@ -6,13 +6,13 @@ import {
 } from '@nestjs/common';
 import { EventCreateDto } from './dto/event-create.dto';
 import { EventUpdateDto } from './dto/event-update.dto';
-import { EventCreate } from './domain/event-create.domain';
+import { EventCreate } from './domain/event-create';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/entities/user.entity';
 import { EventEntity } from './entities/event.entity';
 import { Repository } from 'typeorm';
-import { Event } from './domain/event.domain';
-import { EventUpdate } from './domain/event-update.domain';
+import { Event } from './domain/event';
+import { EventUpdate } from './domain/event-update';
 @Injectable()
 export class EventService {
   constructor(
@@ -76,15 +76,9 @@ export class EventService {
     return eventEntity;
   }
 
-  private validateEventDateAndTime(
-    date: Date,
-    timeStart: string,
-    timeEnd: string,
-  ) {
+  private validateEventDateAndTime(date: Date, timeStart: Date, timeEnd: Date) {
     const currentDate = new Date();
-    currentDate.setHours(currentDate.getHours() + 7);
-
-    const eventDate = new Date(date);
+    currentDate.setHours(currentDate.getHours() + 7); 
 
     const currentDateOnly = new Date(
       currentDate.getFullYear(),
@@ -92,31 +86,19 @@ export class EventService {
       currentDate.getDate(),
     );
     const eventDateOnly = new Date(
-      eventDate.getFullYear(),
-      eventDate.getMonth(),
-      eventDate.getDate(),
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
     );
+
     if (eventDateOnly < currentDateOnly) {
       throw new BadRequestException(
         'Event date must be today or in the future',
       );
     }
 
-    if (
-      eventDateOnly.getTime() === currentDate.getTime() ||
-      eventDateOnly.getTime() > currentDateOnly.getTime()
-    ) {
-      const [startHours, startMinutes, startSeconds] = timeStart
-        .split(':')
-        .map(Number);
-      const [endHours, endMinutes, endSeconds] = timeEnd.split(':').map(Number);
-
-      const startTimeInSeconds =
-        startHours * 3600 + startMinutes * 60 + (startSeconds || 0);
-      const endTimeInSeconds =
-        endHours * 3600 + endMinutes * 60 + (endSeconds || 0);
-
-      if (startTimeInSeconds > endTimeInSeconds) {
+    if (eventDateOnly >= currentDateOnly) {
+      if (timeStart >= timeEnd) {
         throw new BadRequestException(
           'Event start time must be before end time',
         );

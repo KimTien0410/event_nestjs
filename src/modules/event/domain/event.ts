@@ -1,6 +1,6 @@
-import { EventStatus } from 'src/common/enums/event-status';
+import { EventStatus } from 'src/modules/event/domain/event-status';
 import { EventEntity } from '../entities/event.entity';
-import { EventType } from 'src/common/enums/event-type';
+import { EventType } from 'src/modules/event/domain/event-type';
 
 export class Event {
   readonly id: number;
@@ -11,9 +11,9 @@ export class Event {
 
   readonly date: Date;
 
-  readonly timeStart: string;
+  readonly timeStart: Date;
 
-  readonly timeEnd: string;
+  readonly timeEnd: Date;
 
   readonly venue: string;
 

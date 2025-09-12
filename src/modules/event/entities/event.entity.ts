@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { EventStatus } from '../../../common/enums/event-status';
-import { EventType } from '../../../common/enums/event-type';
+import { EventStatus } from '../domain/event-status';
+import { EventType } from '../domain/event-type';
 @Entity('events')
 export class EventEntity {
   @PrimaryGeneratedColumn()
@@ -23,10 +23,10 @@ export class EventEntity {
   date: Date;
 
   @Column({ type: 'time' })
-  timeStart: string;
+  timeStart: Date;
 
   @Column({ type: 'time' })
-  timeEnd: string;
+  timeEnd: Date;
 
   @Column({ nullable: true })
   venue: string;

@@ -12,7 +12,7 @@ export const connectionSource = new DataSource({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   logging: true,
-  entities: [__dirname + '/../modules/**/entities/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/migrations/*.ts'],
+  entities: [__dirname + '/modules/**/*.entity.{js,ts}'],
+  migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false,
 });

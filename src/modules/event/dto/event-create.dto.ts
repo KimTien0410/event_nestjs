@@ -9,8 +9,9 @@ import {
   Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { EventStatus } from 'src/common/enums/event-status';
-import { EventType } from 'src/common/enums/event-type';
+import { EventStatus } from 'src/modules/event/domain/event-status';
+import { EventType } from 'src/modules/event/domain/event-type';
+import { Type } from 'class-transformer';
 
 export class EventCreateDto {
   @ApiProperty({
@@ -35,24 +36,27 @@ export class EventCreateDto {
     description: 'Date of the event (YYYY-MM-DD)',
   })
   @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
+  @Type(() => Date)
   date: Date;
 
   @ApiProperty({
-    example: '09:00',
-    description: 'Start time of the event (HH:MM)',
+    example: '09:00:00',
+    description: 'Start time of the event (HH:MM:SS)',
   })
   @IsNotEmpty()
-  @IsString()
-  timeStart: string;
+  @IsDate()
+  @Type(() => Date)
+  timeStart: Date;
 
   @ApiProperty({
-    example: '17:00',
-    description: 'End time of the event (HH:MM)',
+    example: '17:00:00',
+    description: 'End time of the event (HH:MM:SS)',
   })
-  @IsString()
+  @IsDate()
   @IsNotEmpty()
-  timeEnd: string;
+  @Type(() => Date)
+  timeEnd: Date;
 
   @ApiPropertyOptional({
     example: 'Convention Center, Hall A',
