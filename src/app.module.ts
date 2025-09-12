@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { EventModule } from './modules/event/event.module';
+console.log('Entity path:', __dirname + '/../modules/**/entities/*.entity.{ts,js}');
 
 @Module({
   imports: [
@@ -13,11 +14,13 @@ import { EventModule } from './modules/event/event.module';
       type: 'postgres',
       host: process.env.DATABASE_HOST,
       port: 5432,
-      username: process.env.DATABASE_USER,
+      username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      synchronize: false,
+      logging: true,
+      entities: [__dirname + '/modules/**/*.entity.{js,ts}'],
+      migrations: [__dirname + '/migrations/*{.ts,.js}'],
     }),
     UserModule,
     EventModule,

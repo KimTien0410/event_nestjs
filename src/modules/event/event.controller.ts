@@ -21,10 +21,10 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  async create(@Body() createEventDto: EventCreateDto): Promise<EventDto> {
+  async create(@Body() eventCreateDto: EventCreateDto): Promise<EventDto> {
     return EventDto.fromDomain(
       await this.eventService.create(
-        EventCreateDto.toEventCreate(createEventDto),
+        EventCreateDto.toEventCreate(eventCreateDto),
       ),
     );
   }
@@ -42,12 +42,12 @@ export class EventController {
   @Put(':id')
   async update(
     @Param('id') id: number,
-    @Body() updateEventDto: EventUpdateDto,
+    @Body() eventUpdateDto: EventUpdateDto,
   ) {
     return EventDto.fromDomain(
       await this.eventService.update(
         id,
-        EventUpdateDto.toEventUpdate(updateEventDto),
+        EventUpdateDto.toEventUpdate(eventUpdateDto),
       ),
     );
   }

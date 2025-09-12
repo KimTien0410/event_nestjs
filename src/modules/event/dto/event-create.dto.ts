@@ -9,12 +9,13 @@ import {
   Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EventStatus } from 'src/common/enums/event-status';
+import { EventType } from 'src/common/enums/event-type';
 
 export class EventCreateDto {
   @ApiProperty({
     example: 'Tech Conference 2023',
     description: 'Title of the event',
-    required: true,
   })
   @IsString()
   @IsNotEmpty()
@@ -32,29 +33,26 @@ export class EventCreateDto {
   @ApiProperty({
     example: '2023-09-15',
     description: 'Date of the event (YYYY-MM-DD)',
-    required: true,
   })
   @IsNotEmpty()
   @IsDateString()
-  date: string;
+  date: Date;
 
   @ApiProperty({
     example: '09:00',
     description: 'Start time of the event (HH:MM)',
-    required: true,
   })
-  @IsString()
   @IsNotEmpty()
-  time_start: string;
+  @IsString()
+  timeStart: string;
 
   @ApiProperty({
     example: '17:00',
     description: 'End time of the event (HH:MM)',
-    required: true,
   })
   @IsString()
   @IsNotEmpty()
-  time_end: string;
+  timeEnd: string;
 
   @ApiPropertyOptional({
     example: 'Convention Center, Hall A',
@@ -68,7 +66,6 @@ export class EventCreateDto {
   @ApiProperty({
     example: '123 Main St, Cityville',
     description: 'Location of the event',
-    required: true,
   })
   @IsString()
   @IsNotEmpty()
@@ -78,27 +75,24 @@ export class EventCreateDto {
     example: 'upcoming',
     description:
       "Status of the event ('upcoming', 'ongoing', 'completed', 'cancelled')",
-    required: true,
-    enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
-    default: 'upcoming',
+    enum: EventStatus,
+    default: EventStatus.UPCOMING,
   })
-  @IsEnum(['upcoming', 'ongoing', 'completed', 'cancelled'])
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  @IsEnum(EventStatus)
+  status: EventStatus;
 
   @ApiProperty({
     example: 'offline',
     description: "Type of the event ('online', 'offline', 'hybrid')",
-    required: true,
-    enum: ['online', 'offline', 'hybrid'],
-    default: 'offline',
+    enum: EventType,
+    default: EventType.OFFLINE,
   })
-  @IsEnum(['online', 'offline', 'hybrid'])
-  type: 'online' | 'offline' | 'hybrid';
+  @IsEnum(EventType)
+  type: EventType;
 
   @ApiProperty({
     example: 100,
     description: 'Capacity of the event (minimum 1)',
-    required: true,
     minimum: 1,
   })
   @IsInt()
@@ -109,9 +103,9 @@ export class EventCreateDto {
     return {
       title: eventCreateDto.title,
       description: eventCreateDto.description,
-      date: new Date(eventCreateDto.date),
-      time_start: eventCreateDto.time_start,
-      time_end: eventCreateDto.time_end,
+      date: eventCreateDto.date,
+      timeStart: eventCreateDto.timeStart,
+      timeEnd: eventCreateDto.timeEnd,
       venue: eventCreateDto.venue,
       location: eventCreateDto.location,
       status: eventCreateDto.status,

@@ -1,4 +1,6 @@
 import { EventEntity } from '../entities/event.entity';
+import { EventStatus } from '../../../common/enums/event-status';
+import { EventType } from '../../../common/enums/event-type';
 
 export class EventUpdate {
   readonly title: string;
@@ -7,17 +9,17 @@ export class EventUpdate {
 
   readonly date: Date;
 
-  readonly time_start: string;
+  readonly timeStart: string;
 
-  readonly time_end: string;
+  readonly timeEnd: string;
 
   readonly venue: string;
 
   readonly location: string;
 
-  readonly status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  readonly status: EventStatus;
 
-  readonly type: 'online' | 'offline' | 'hybrid';
+  readonly type: EventType;
 
   readonly capacity: number;
 
@@ -26,8 +28,8 @@ export class EventUpdate {
       title: eventUpdate.title,
       description: eventUpdate.description,
       date: eventUpdate.date,
-      time_start: eventUpdate.time_start,
-      time_end: eventUpdate.time_end,
+      timeStart: eventUpdate.timeStart,
+      timeEnd: eventUpdate.timeEnd,
       venue: eventUpdate.venue,
       location: eventUpdate.location,
       status: eventUpdate.status,

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Event } from '../domain/event.domain';
+import { EventStatus } from 'src/common/enums/event-status';
+import { EventType } from 'src/common/enums/event-type';
 
 export class EventDto {
   @ApiProperty({
@@ -30,13 +32,13 @@ export class EventDto {
     example: '09:00',
     description: 'Start time of the event (HH:MM)',
   })
-  time_start: string;
+  timeStart: string;
 
   @ApiProperty({
     example: '17:00',
     description: 'End time of the event (HH:MM)',
   })
-  time_end: string;
+  timeEnd: string;
 
   @ApiProperty({
     example: 'Convention Center, Hall A',
@@ -54,13 +56,13 @@ export class EventDto {
     example: 'upcoming',
     description: 'Status of the event',
   })
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: EventStatus;
 
   @ApiProperty({
     example: 'offline',
     description: 'Type of the event',
   })
-  type: 'online' | 'offline' | 'hybrid';
+  type: EventType;
 
   capacity: number;
 
@@ -68,13 +70,13 @@ export class EventDto {
     example: '2023-01-01T00:00:00Z',
     description: 'Creation date of the event',
   })
-  created_at: Date;
+  createdAt: Date;
 
   @ApiProperty({
     example: '2023-01-01T00:00:00Z',
     description: 'Last update date of the event',
   })
-  updated_at: Date;
+  updatedAt: Date;
 
   static fromDomain(event: Event): EventDto {
     return {
@@ -82,15 +84,15 @@ export class EventDto {
       title: event.title,
       description: event.description,
       date: event.date,
-      time_start: event.time_start,
-      time_end: event.time_end,
+      timeStart: event.timeStart,
+      timeEnd: event.timeEnd,
       venue: event.venue,
       location: event.location,
       status: event.status,
       type: event.type,
       capacity: event.capacity,
-      created_at: event.created_at,
-      updated_at: event.updated_at,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
     };
   }
 

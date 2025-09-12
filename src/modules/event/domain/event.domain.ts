@@ -1,4 +1,6 @@
+import { EventStatus } from 'src/common/enums/event-status';
 import { EventEntity } from '../entities/event.entity';
+import { EventType } from 'src/common/enums/event-type';
 
 export class Event {
   readonly id: number;
@@ -9,23 +11,23 @@ export class Event {
 
   readonly date: Date;
 
-  readonly time_start: string;
+  readonly timeStart: string;
 
-  readonly time_end: string;
+  readonly timeEnd: string;
 
   readonly venue: string;
 
   readonly location: string;
 
-  readonly status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  readonly status: EventStatus;
 
-  readonly type: 'online' | 'offline' | 'hybrid';
+  readonly type: EventType;
 
   readonly capacity: number;
 
-  readonly created_at: Date;
+  readonly createdAt: Date;
 
-  readonly updated_at: Date;
+  readonly updatedAt: Date;
 
   static fromEntity(eventEntity: EventEntity): Event {
     return {
@@ -33,19 +35,15 @@ export class Event {
       title: eventEntity.title,
       description: eventEntity.description,
       date: eventEntity.date,
-      time_start: eventEntity.time_start,
-      time_end: eventEntity.time_end,
+      timeStart: eventEntity.timeStart,
+      timeEnd: eventEntity.timeEnd,
       venue: eventEntity.venue,
       location: eventEntity.location,
-      status: eventEntity.status as
-        | 'upcoming'
-        | 'ongoing'
-        | 'completed'
-        | 'cancelled',
-      type: eventEntity.type as 'online' | 'offline' | 'hybrid',
+      status: eventEntity.status,
+      type: eventEntity.type,
       capacity: eventEntity.capacity,
-      created_at: eventEntity.created_at,
-      updated_at: eventEntity.updated_at,
+      createdAt: eventEntity.createdAt,
+      updatedAt: eventEntity.updatedAt,
     };
   }
 

@@ -23,8 +23,8 @@ export class EventService {
   async create(eventCreate: EventCreate): Promise<Event> {
     this.validateEventDateAndTime(
       eventCreate.date,
-      eventCreate.time_start,
-      eventCreate.time_end,
+      eventCreate.timeStart,
+      eventCreate.timeEnd,
     );
 
     const eventEntity = await this.eventRepository.save(
@@ -46,16 +46,20 @@ export class EventService {
     const eventEntity = this.findEventOrThrow(id);
     this.validateEventDateAndTime(
       updateEvent.date,
-      updateEvent.time_start,
-      updateEvent.time_end,
+      updateEvent.timeStart,
+      updateEvent.timeEnd,
     );
 
-    return Event.fromEntity(
-      await this.eventRepository.save({
-        ...eventEntity,
-        ...EventUpdate.toEntity(updateEvent),
-      }),
-    );
+    const toUpdate = await this.eventRepository.preload({
+      id,
+      ...EventUpdate.toEntity(updateEvent),
+    });
+
+    if (!toUpdate) {
+      throw new NotFoundException(`Event ${id} not found`);
+    }
+
+    return Event.fromEntity(await this.eventRepository.save(toUpdate));
   }
 
   async remove(id: number): Promise<void> {
@@ -74,8 +78,8 @@ export class EventService {
 
   private validateEventDateAndTime(
     date: Date,
-    time_start: string,
-    time_end: string,
+    timeStart: string,
+    timeEnd: string,
   ) {
     const currentDate = new Date();
     currentDate.setHours(currentDate.getHours() + 7);
@@ -102,12 +106,10 @@ export class EventService {
       eventDateOnly.getTime() === currentDate.getTime() ||
       eventDateOnly.getTime() > currentDateOnly.getTime()
     ) {
-      const [startHours, startMinutes, startSeconds] = time_start
+      const [startHours, startMinutes, startSeconds] = timeStart
         .split(':')
         .map(Number);
-      const [endHours, endMinutes, endSeconds] = time_end
-        .split(':')
-        .map(Number);
+      const [endHours, endMinutes, endSeconds] = timeEnd.split(':').map(Number);
 
       const startTimeInSeconds =
         startHours * 3600 + startMinutes * 60 + (startSeconds || 0);

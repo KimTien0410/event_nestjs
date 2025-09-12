@@ -6,7 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
+import { EventStatus } from '../../../common/enums/event-status';
+import { EventType } from '../../../common/enums/event-type';
 @Entity('events')
 export class EventEntity {
   @PrimaryGeneratedColumn()
@@ -22,10 +23,10 @@ export class EventEntity {
   date: Date;
 
   @Column({ type: 'time' })
-  time_start: string;
+  timeStart: string;
 
   @Column({ type: 'time' })
-  time_end: string;
+  timeEnd: string;
 
   @Column({ nullable: true })
   venue: string;
@@ -35,24 +36,24 @@ export class EventEntity {
 
   @Column({
     type: 'enum',
-    enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
-    default: 'upcoming',
+    enum: EventStatus,
+    default: EventStatus.UPCOMING,
   })
-  status: string;
+  status: EventStatus;
 
   @Column({
     type: 'enum',
-    enum: ['online', 'offline', 'hybrid'],
-    default: 'offline',
+    enum: EventType,
+    default: EventType.OFFLINE,
   })
-  type: string;
+  type: EventType;
 
   @Column()
   capacity: number;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }
