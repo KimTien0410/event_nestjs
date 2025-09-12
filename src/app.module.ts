@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { EventModule } from './modules/event/event.module';
-console.log('Entity path:', __dirname + '/../modules/**/entities/*.entity.{ts,js}');
 
 @Module({
   imports: [
