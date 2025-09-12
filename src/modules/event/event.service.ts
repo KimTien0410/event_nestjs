@@ -48,8 +48,6 @@ export class EventService {
       updateEvent.timeEnd,
     );
 
-    console.log('eventEntity', eventEntity);
-    
     return Event.fromEntity(await this.eventRepository.save({
       ...eventEntity,
       ...EventUpdate.toEntity(updateEvent),
