@@ -12,6 +12,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EventStatus } from 'src/modules/event/domain/event-status';
 import { EventType } from 'src/modules/event/domain/event-type';
 import { Type } from 'class-transformer';
+import { EventCreate } from '../domain/event-create';
 
 export class EventCreateDto {
   @ApiProperty({
@@ -94,7 +95,7 @@ export class EventCreateDto {
   @Min(1)
   capacity: number;
 
-  static toEventCreate(eventCreateDto: EventCreateDto) {
+  static toEventCreate(eventCreateDto: EventCreateDto): EventCreate {
     return {
       title: eventCreateDto.title,
       description: eventCreateDto.description,

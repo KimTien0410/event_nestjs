@@ -13,6 +13,7 @@ import { EventEntity } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { Event } from './domain/event';
 import { EventUpdate } from './domain/event-update';
+
 @Injectable()
 export class EventService {
   constructor(
@@ -21,10 +22,7 @@ export class EventService {
   ) {}
 
   async create(eventCreate: EventCreate): Promise<Event> {
-    this.validateEventTime(
-      eventCreate.timeStart,
-      eventCreate.timeEnd,
-    );
+    this.validateEventTime(eventCreate.timeStart, eventCreate.timeEnd);
 
     return Event.fromEntity(
       await this.eventRepository.save(
@@ -44,11 +42,13 @@ export class EventService {
   async update(id: number, updateEvent: EventUpdate): Promise<Event> {
     this.validateEventTime(updateEvent.timeStart, updateEvent.timeEnd);
     const eventEntity = await this.findEventOrThrow(id);
-    
-    return Event.fromEntity(await this.eventRepository.save({
-      ...eventEntity,
-      ...EventUpdate.toEntity(updateEvent),
-    }));
+
+    return Event.fromEntity(
+      await this.eventRepository.save({
+        ...eventEntity,
+        ...EventUpdate.toEntity(updateEvent),
+      }),
+    );
   }
 
   async remove(id: number): Promise<void> {
@@ -65,21 +65,29 @@ export class EventService {
     return eventEntity;
   }
 
-  private validateEventTime(timeStart: Date | undefined, timeEnd: Date | undefined) {
-    if (!timeStart) {
-      throw new BadRequestException('Start time is required');
-    }
-    if (!timeEnd) {
-      throw new BadRequestException('End time is required');
-    }
-    const now = new Date();
-    if (timeStart <= now) {
-      throw new BadRequestException('Start time must be in the future');
+  private validateEventTime(timeStart?: Date, timeEnd?: Date) {
+    if (!timeStart && !timeEnd) {
+      return;
     }
 
-    if (timeEnd <= timeStart) {
-      throw new BadRequestException('End time must be after start time');
+    const now = new Date();
+
+    if (timeStart) {
+      if (timeStart <= now) {
+        throw new BadRequestException('Start time must be in the future');
+      }
+    }
+
+    if (timeEnd) {
+      if (timeEnd <= now) {
+        throw new BadRequestException('End time must be in the future');
+      }
+    }
+
+    if (timeStart && timeEnd) {
+      if (timeEnd <= timeStart) {
+        throw new BadRequestException('End time must be after start time');
+      }
     }
   }
-
 }

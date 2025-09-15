@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { EventStatus } from '../domain/event-status';
 import { EventType } from '../domain/event-type';
+
 @Entity('events')
 export class EventEntity {
   @PrimaryGeneratedColumn()

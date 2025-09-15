@@ -12,6 +12,7 @@ import {
 import { EventStatus } from 'src/modules/event/domain/event-status';
 import { EventType } from 'src/modules/event/domain/event-type';
 import { Type } from 'class-transformer';
+import { EventUpdate } from '../domain/event-update';
 
 export class EventUpdateDto {
   @ApiProperty({
@@ -37,7 +38,8 @@ export class EventUpdateDto {
   })
   @IsDate()
   @Type(() => Date)
-  timeStart: Date;
+  @IsOptional()
+  timeStart?: Date;
 
   @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
@@ -45,7 +47,8 @@ export class EventUpdateDto {
   })
   @IsDate()
   @Type(() => Date)
-  timeEnd: Date;
+  @IsOptional()
+  timeEnd?: Date;
 
   @ApiProperty({
     example: 'Convention Center, Hall A',
@@ -93,7 +96,7 @@ export class EventUpdateDto {
   @IsOptional()
   capacity?: number;
 
-  static toEventUpdate(eventUpdateDto: EventUpdateDto) {
+  static toEventUpdate(eventUpdateDto: EventUpdateDto): EventUpdate {
     return {
       title: eventUpdateDto.title,
       description: eventUpdateDto.description,

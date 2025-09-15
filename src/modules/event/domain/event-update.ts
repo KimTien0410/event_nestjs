@@ -7,9 +7,9 @@ export class EventUpdate {
 
   readonly description?: string;
 
-  readonly timeStart: Date;
+  readonly timeStart?: Date;
 
-  readonly timeEnd: Date;
+  readonly timeEnd?: Date;
 
   readonly venue?: string;
 
