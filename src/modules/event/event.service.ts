@@ -41,7 +41,8 @@ export class EventService {
 
   async update(id: number, updateEvent: EventUpdate): Promise<Event> {
     const eventEntity = await this.findEventOrThrow(id);
-    EventService.validateEventTime(updateEvent.timeStart ?? eventEntity.timeStart, updateEvent.timeEnd ?? eventEntity.timeEnd);
+    EventService.validateEventTime(updateEvent.timeStart ?? eventEntity.timeStart,
+      updateEvent.timeEnd ?? eventEntity.timeEnd);
     
     return Event.fromEntity(
       await this.eventRepository.save({
@@ -65,22 +66,18 @@ export class EventService {
     return eventEntity;
   }
 
-  private static validateEventTime(timeStart?: Date, timeEnd?: Date) {
-    if (!timeStart && !timeEnd) {
-      return;
-    }
-
+  private static validateEventTime(timeStart: Date, timeEnd: Date) {
     const now = new Date();
 
-    if (timeStart && timeStart <= now) {
+    if (timeStart <= now) {
       throw new BadRequestException('Start time must be in the future');
     }
 
-    if (timeEnd && timeEnd <= now) {
+    if (timeEnd <= now) {
         throw new BadRequestException('End time must be in the future');
     }
 
-    if (timeStart && timeEnd && timeEnd <= timeStart) {
+    if (timeEnd <= timeStart) {
         throw new BadRequestException('End time must be after start time');
       }
   }
