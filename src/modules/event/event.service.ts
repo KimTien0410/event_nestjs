@@ -41,8 +41,10 @@ export class EventService {
 
   async update(id: number, updateEvent: EventUpdate): Promise<Event> {
     const eventEntity = await this.findEventOrThrow(id);
-    EventService.validateEventTime(updateEvent.timeStart ?? eventEntity.timeStart,
-      updateEvent.timeEnd ?? eventEntity.timeEnd);
+    EventService.validateEventTime(
+      updateEvent.timeStart ?? eventEntity.timeStart,
+      updateEvent.timeEnd ?? eventEntity.timeEnd
+    );
     
     return Event.fromEntity(
       await this.eventRepository.save({
