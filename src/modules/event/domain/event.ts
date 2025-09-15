@@ -7,13 +7,13 @@ export class Event {
 
   readonly title: string;
 
-  readonly description: string;
+  readonly description: string | null;
 
   readonly timeStart: Date;
 
   readonly timeEnd: Date;
 
-  readonly venue: string;
+  readonly venue: string | null;
 
   readonly location: string;
 
@@ -31,10 +31,10 @@ export class Event {
     return {
       id: eventEntity.id,
       title: eventEntity.title,
-      description: eventEntity.description,
+      description: eventEntity.description ?? null,
       timeStart: eventEntity.timeStart,
       timeEnd: eventEntity.timeEnd,
-      venue: eventEntity.venue,
+      venue: eventEntity.venue ?? null,
       location: eventEntity.location,
       status: eventEntity.status,
       type: eventEntity.type,

@@ -17,8 +17,8 @@ export class EventEntity {
   @Column()
   title: string;
 
-  @Column({ nullable: true })
-  description: string;
+  @Column({ nullable: true, type: 'text' })
+  description: string | null;
 
   @Column({ type: 'timestamp' })
   timeStart: Date;
@@ -26,8 +26,8 @@ export class EventEntity {
   @Column({ type: 'timestamp' })
   timeEnd: Date;
 
-  @Column({ nullable: true })
-  venue: string;
+  @Column({ nullable: true, type: "varchar", length: 255 })
+  venue: string | null;
 
   @Column()
   location: string;

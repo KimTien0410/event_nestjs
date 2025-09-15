@@ -20,7 +20,7 @@ export class EventDto {
     example: 'A conference discussing the latest trends in technology.',
     description: 'Description of the event',
   })
-  description: string;
+  description: string | null;
 
   @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
@@ -38,7 +38,7 @@ export class EventDto {
     example: 'Convention Center, Hall A',
     description: 'Venue of the event',
   })
-  venue: string;
+  venue: string | null;
 
   @ApiProperty({
     example: '123 Main St, Cityville',
@@ -80,10 +80,10 @@ export class EventDto {
     return {
       id: event.id,
       title: event.title,
-      description: event.description,
+      description: event.description ?? null,
       timeStart: event.timeStart,
       timeEnd: event.timeEnd,
-      venue: event.venue,
+      venue: event.venue ?? null,
       location: event.location,
       status: event.status,
       type: event.type,
