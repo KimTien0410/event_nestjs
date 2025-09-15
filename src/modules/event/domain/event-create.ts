@@ -11,7 +11,7 @@ export class EventCreate {
 
   readonly timeEnd: Date;
 
-  readonly venue: string;
+  readonly venue?: string;
 
   readonly location: string;
 

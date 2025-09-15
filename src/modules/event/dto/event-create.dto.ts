@@ -29,16 +29,11 @@ export class EventCreateDto {
   })
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
 
   @ApiProperty({
-    example: '2023-09-15',
-    description: 'Date of the event (YYYY-MM-DD)',
-  })
-  @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
-    description:
-      'Start time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) Start time of the event',
   })
   @IsNotEmpty()
   @IsDate()
@@ -47,7 +42,7 @@ export class EventCreateDto {
 
   @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
-    description: 'End time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) End time of the event ',
   })
   @IsNotEmpty()
   @IsDate()
@@ -61,7 +56,7 @@ export class EventCreateDto {
   })
   @IsString()
   @IsOptional()
-  venue: string;
+  venue?: string;
 
   @ApiProperty({
     example: '123 Main St, Cityville',

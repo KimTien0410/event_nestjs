@@ -26,11 +26,11 @@ export class EventService {
       eventCreate.timeEnd,
     );
 
-    const eventEntity = await this.eventRepository.save(
-      this.eventRepository.create(EventCreate.toEntity(eventCreate)),
+    return Event.fromEntity(
+      await this.eventRepository.save(
+        this.eventRepository.create(EventCreate.toEntity(eventCreate)),
+      ),
     );
-
-    return Event.fromEntity(eventEntity);
   }
 
   async findAll(): Promise<Event[]> {
@@ -42,12 +42,9 @@ export class EventService {
   }
 
   async update(id: number, updateEvent: EventUpdate): Promise<Event> {
+    this.validateEventTime(updateEvent.timeStart, updateEvent.timeEnd);
     const eventEntity = await this.findEventOrThrow(id);
-    this.validateEventTime(
-      updateEvent.timeStart,
-      updateEvent.timeEnd,
-    );
-
+    
     return Event.fromEntity(await this.eventRepository.save({
       ...eventEntity,
       ...EventUpdate.toEntity(updateEvent),
@@ -68,16 +65,21 @@ export class EventService {
     return eventEntity;
   }
 
-  private validateEventTime(startTime: Date, endTime: Date) {
-  const now = new Date();
+  private validateEventTime(timeStart: Date | undefined, timeEnd: Date | undefined) {
+    if (!timeStart) {
+      throw new BadRequestException('Start time is required');
+    }
+    if (!timeEnd) {
+      throw new BadRequestException('End time is required');
+    }
+    const now = new Date();
+    if (timeStart <= now) {
+      throw new BadRequestException('Start time must be in the future');
+    }
 
-  if (startTime < now) {
-    throw new BadRequestException('Start time must be in the future');
+    if (timeEnd <= timeStart) {
+      throw new BadRequestException('End time must be after start time');
+    }
   }
-
-  if (endTime <= startTime) {
-    throw new BadRequestException('End time must be after start time');
-  }
-}
 
 }

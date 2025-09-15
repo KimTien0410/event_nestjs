@@ -24,13 +24,13 @@ export class EventDto {
 
   @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
-    description: 'Start time of the event (HH:MM)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) Start time of the event',
   })
   timeStart: Date;
 
   @ApiProperty({
     example: '2025-09-15T11:00:00.000Z',
-    description: 'End time of the event (HH:MM)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) End time of the event',
   })
   timeEnd: Date;
 
@@ -58,6 +58,10 @@ export class EventDto {
   })
   type: EventType;
 
+  @ApiProperty({
+    example: 100,
+    description: 'Capacity of the event',
+  })
   capacity: number;
 
   @ApiProperty({

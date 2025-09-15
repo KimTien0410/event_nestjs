@@ -19,21 +19,21 @@ export class EventUpdateDto {
     description: 'Title of the event',
   })
   @IsString()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @ApiProperty({
     example: 'A conference about the latest in technology.',
     description: 'Description of the event (optional)',
     required: false,
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   description?: string;
 
   @ApiProperty({
     example: '2025-09-15T07:00:00.000Z',
-    description:
-      'Start time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) Start time of the event',
   })
   @IsDate()
   @Type(() => Date)
@@ -41,7 +41,7 @@ export class EventUpdateDto {
 
   @ApiProperty({
     example: '2025-09-15T09:00:00.000Z',
-    description: 'End time of the event YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format)',
+    description: 'YYYY-MM-DDTHH:MM:SSZ (ISO 8601 format) End time of the event',
   })
   @IsDate()
   @Type(() => Date)
@@ -52,14 +52,16 @@ export class EventUpdateDto {
     description: 'Venue of the event (optional)',
   })
   @IsString()
-  venue: string;
+  @IsOptional()
+  venue?: string;
 
   @ApiProperty({
     example: '123 Main St, Cityville',
     description: 'Location of the event',
   })
   @IsString()
-  location: string;
+  @IsOptional()
+  location?: string;
 
   @ApiProperty({
     example: 'upcoming',
@@ -68,7 +70,8 @@ export class EventUpdateDto {
     default: EventStatus.UPCOMING,
   })
   @IsEnum(EventStatus)
-  status: EventStatus;
+  @IsOptional()
+  status?: EventStatus;
 
   @ApiProperty({
     example: 'offline',
@@ -77,7 +80,8 @@ export class EventUpdateDto {
     default: EventType.OFFLINE,
   })
   @IsEnum(EventType)
-  type: EventType;
+  @IsOptional()
+  type?: EventType;
 
   @ApiProperty({
     example: 100,
@@ -86,7 +90,8 @@ export class EventUpdateDto {
   })
   @IsInt()
   @Min(1)
-  capacity: number;
+  @IsOptional()
+  capacity?: number;
 
   static toEventUpdate(eventUpdateDto: EventUpdateDto) {
     return {

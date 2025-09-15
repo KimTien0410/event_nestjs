@@ -3,7 +3,7 @@ import { EventStatus } from './event-status';
 import { EventType } from './event-type';
 
 export class EventUpdate {
-  readonly title: string;
+  readonly title?: string;
 
   readonly description?: string;
 
@@ -11,15 +11,15 @@ export class EventUpdate {
 
   readonly timeEnd: Date;
 
-  readonly venue: string;
+  readonly venue?: string;
 
-  readonly location: string;
+  readonly location?: string;
 
-  readonly status: EventStatus;
+  readonly status?: EventStatus;
 
-  readonly type: EventType;
+  readonly type?: EventType;
 
-  readonly capacity: number;
+  readonly capacity?: number;
 
   static toEntity(eventUpdate: EventUpdate): Partial<EventEntity> {
     return {
