@@ -33,7 +33,8 @@
     - userId: number (Foreign Key to User)
     - eventId: number (Foreign Key to Event)
     - status: string (Enum: 'registered', 'cancelled')
-    - registered_at: Date
+    - registeredAt: Date
+    - cancelledAt
 3. Các API Endpoint
 * User Management
     - POST /users: Tạo mới user

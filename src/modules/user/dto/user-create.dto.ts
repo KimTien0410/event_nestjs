@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
-import { UserCreate } from '../domain/user-create.domain';
+import { UserCreate } from '../domain/user-create';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserCreateDto {
