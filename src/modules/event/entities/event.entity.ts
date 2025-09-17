@@ -56,12 +56,6 @@ export class EventEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(
-    () => AttendanceEntity,
-    (attendanceEntity) => attendanceEntity.eventEntity,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  attendanceEntities: AttendanceEntity[];
+  @OneToMany(() => AttendanceEntity, (attendanceEntity) => attendanceEntity.event, { onDelete: 'CASCADE'} )
+  attendances: AttendanceEntity[];
 }

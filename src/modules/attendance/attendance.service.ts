@@ -1,162 +1,136 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager } from 'typeorm';
+import { InjectRepository} from '@nestjs/typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
-import type { IEventRegistrationService } from '../event/i-event-registration.service';
 import { AttendanceRegister } from './domain/attendace-register';
 import { Attendance } from './domain/attendance';
 import { AttendanceStatus } from './domain/attendance-status';
-import { EventService } from '../event/event.service';
-import { UserService } from '../user/user.service';
 import { EventStatus } from '../event/domain/event-status';
 import { AttendanceCancel } from './domain/attendance-cancel';
+import { UserTopRegistration } from '../user/domain/user-top-registration';
+import { UserEntity } from '../user/entities/user.entity';
+import { Transactional } from 'typeorm-transactional';
+import { EventRegistrationService } from '../event/event-registration.service';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectRepository(AttendanceEntity)
     private attendanceRepository: Repository<AttendanceEntity>,
-
-    @InjectDataSource()
-    private dataSource: DataSource,
-
-    @Inject('IEventRegistrationService')
-    private eventRegistrationService: IEventRegistrationService,
-
-    private readonly eventService: EventService,
-
-    private readonly userService: UserService,
-
+    private readonly eventRegistrationService: EventRegistrationService,
   ) {}
 
+  @Transactional()
   async register(attendanceRegister: AttendanceRegister): Promise<Attendance> {
-    const user = await this.userService.findUserOrThrow(attendanceRegister.userId);
-    const event = await this.eventService.findEventOrThrow(attendanceRegister.eventId);
-    return this.dataSource
-      .transaction(async (manager: EntityManager) => {
-        // Kiểm tra xem sự kiện có thể đăng ký được không
-        const isRegistrable = await this.eventRegistrationService.isEventRegistrable(
-          attendanceRegister.eventId,
-          manager,
-        );
+    const existing = await this.attendanceRepository.findOne({
+      where: {
+        userId: attendanceRegister.userId,
+        eventId: attendanceRegister.eventId,
+        status: AttendanceStatus.REGISTERED,
+      },
+    });
 
-        if (!isRegistrable) {
-          throw new BadRequestException('Event is not open for registration');
-        }
+    if (existing) {
+      throw new BadRequestException(
+        'User is already registered for this event',
+      );
+    }
 
-        // Lấy thông tin sự kiện
-        const event = await this.eventRegistrationService.getEventForRegistration(
-          attendanceRegister.eventId,
-          manager,
-        );
+    // Check if the event is still open for registration
 
-        // Kiểm tra capacity
-        const currentAttendants =
-          await this.eventRegistrationService.getCurrentAttendantCount(
-            attendanceRegister.eventId,
-            manager,
-          );
-        
-        if (currentAttendants >= event.capacity) {
-          throw new BadRequestException('Event has reached its capacity');
-        }
+    const event = await this.eventRegistrationService.getEventForRegistration(
+      attendanceRegister.eventId,
+    );
 
-        // Kiểm tra conflict thời gian
-        const conflicting = await manager
-          .createQueryBuilder(AttendanceEntity, 'attendance')
-          .innerJoin('attendance.eventEntity', 'eventEntity')
-          .where('attendance.userEntity.id = :userId', {
-            userId: attendanceRegister.userId,
-          })
-          .andWhere('attendance.status = :status', { status: AttendanceStatus.REGISTERED })
-          .andWhere(
-            '(eventEntity.timeStart < :newEnd AND eventEntity.timeEnd > :newStart)',
-            {
-              newStart: event.timeStart,
-              newEnd: event.timeEnd,
-            },
-          )
-          .getCount();
+    if (event.status !== EventStatus.UPCOMING) {
+      throw new BadRequestException('Event is not open for registration');
+    }
 
-        if (conflicting > 0) {
-          throw new BadRequestException('User has a conflicting event');
-        }
+    // Check if the event has reached its capacity
+    const currentAttendants =
+      await this.eventRegistrationService.getCurrentAttendantCount(
+        attendanceRegister.eventId,
+      );
 
-        // Kiểm tra xem user đã đăng ký sự kiện này chưa
-        const existingRegistration = await manager.findOne(AttendanceEntity, {
-          where: {
-            userEntity: { id: attendanceRegister.userId },
-            eventEntity: { id: attendanceRegister.eventId },
-            status: AttendanceStatus.REGISTERED,
-          },
-        });
-        if (existingRegistration) {
-          throw new BadRequestException(
-            'User is already registered for this event',
-          );
-        }
+    if (currentAttendants >= event.capacity) {
+      throw new BadRequestException('Event has reached its capacity');
+    }
 
-        // Tạo và lưu bản ghi attendance
-        const attendance = manager.create(AttendanceEntity, {
-          userEntity: { id: attendanceRegister.userId },
-          eventEntity: { id: attendanceRegister.eventId },
-          status: AttendanceStatus.REGISTERED,
-        });
-
-        return Attendance.fromEntity(await manager.save(AttendanceEntity, attendance));
-
+    // Check for time conflicts with user's other registered events
+    const conflicting = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .innerJoin('attendance.event', 'event')
+      .where('attendance.userId = :userId', {
+        userId: attendanceRegister.userId,
       })
-      .catch((error) => {
-        // Xử lý lỗi unique constraint hoặc các lỗi khác
-        if (error.code === '23505') {
-          throw new BadRequestException(
-            'User is already registered for this event',
-          );
-        }
-        throw new BadRequestException(`Registration failed: ${error.message}`);
-      });
+      .andWhere('attendance.status = :status', {
+        status: AttendanceStatus.REGISTERED,
+      })
+      .andWhere('(event.timeStart < :newEnd AND event.timeEnd > :newStart)', {
+        newStart: event.timeStart,
+        newEnd: event.timeEnd,
+      })
+      .getCount();
+
+    if (conflicting > 0) {
+      throw new BadRequestException('User has a conflicting event');
+    }
+
+    return Attendance.fromEntity(
+      await this.attendanceRepository.save({
+        userId: attendanceRegister.userId,
+        eventId: attendanceRegister.eventId,
+        status: AttendanceStatus.REGISTERED,
+      }),
+    );
   }
 
-  async cancel(attendanceId: number, attendanceCancel: AttendanceCancel): Promise<void> {
-    
-  
-    return this.dataSource
-      .transaction(async (manager: EntityManager) => {
-        const attendance = await manager.findOne(AttendanceEntity, {
-          where: { id: attendanceId },
-          relations: ['userEntity', 'eventEntity'],
-        });
+  async cancel(attendanceCancel: AttendanceCancel): Promise<void> {
+    const attendance = await this.attendanceRepository.findOne({
+      where: {
+        userId: attendanceCancel.userId,
+        eventId: attendanceCancel.eventId,
+        status: AttendanceStatus.REGISTERED,
+      },
+    });
+    if (!attendance) {
+      throw new BadRequestException(
+        'No active registration found for this user and event',
+      );
+    }
+    attendance.status = AttendanceStatus.CANCELLED;
+    attendance.cancelledAt = new Date();
+    await this.attendanceRepository.save(attendance);
+  }
 
-        if (!attendance) {
-          throw new BadRequestException('Registration not found');
-        }
-
-        const event = await this.eventService.findEventOrThrow(attendance.eventEntity.id);
-        const user = await this.userService.findUserOrThrow(attendanceCancel.userId);
-        // Kiểm tra quyền hủy
-        if (attendance.userEntity.id !== user.id) {
-          throw new BadRequestException(
-            'User is not authorized to cancel this registration',
-          );
-        }
-
-        // Chỉ cho phép hủy khi sự kiện chưa bắt đầu
-        if (event.status !== EventStatus.UPCOMING) {
-          throw new BadRequestException('Event is ongoing, cannot cancel registration');
-        }
-
-        // Kiểm tra trạng thái hiện tại
-        if (attendance.status === AttendanceStatus.CANCELLED) {
-          throw new BadRequestException('Registration already canceled');
-        }
-
-        // Cập nhật trạng thái và thời gian hủy
-        attendance.status = AttendanceStatus.CANCELLED;
-        attendance.cancelledAt = new Date();
-        await manager.save(AttendanceEntity, attendance);
+  async getTopUsersByAttendance(
+    limit: number = 100,
+  ): Promise<UserTopRegistration[]> {
+    const users = await this.attendanceRepository
+      .createQueryBuilder('attendance')
+      .select('attendance.userId', 'userId')
+      .addSelect('user.name', 'userName')
+      .addSelect('user.email', 'userEmail')
+      .addSelect('COUNT(attendance.id)', 'registrationCount')
+      .innerJoin(UserEntity, 'user', 'user.id = attendance.userId')
+      .where('attendance.status = :status', {
+        status: AttendanceStatus.REGISTERED,
       })
-      .catch((error) => {
-        throw new BadRequestException(`Cancellation failed: ${error.message}`);
-      });
+      .groupBy('attendance.userId')
+      .addGroupBy('user.name')
+      .addGroupBy('user.email')
+      .orderBy('COUNT(attendance.id)', 'DESC')
+      .limit(limit)
+      .getRawMany();
+
+    return users.map(
+      (u) =>
+        new UserTopRegistration(
+          parseInt(u.userId, 10),
+          u.userName,
+          u.userEmail,
+          parseInt(u.registrationCount, 10),
+        ),
+    );
   }
 }

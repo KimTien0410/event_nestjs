@@ -29,12 +29,6 @@ export class UserEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(
-    () => AttendanceEntity,
-    (attendanceEntity) => attendanceEntity.userEntity,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  attendanceEntities: AttendanceEntity[];
+  @OneToMany(() => AttendanceEntity, (attendanceEntity) => attendanceEntity.user, { onDelete: 'CASCADE' })
+  attendances: AttendanceEntity[];
 }

@@ -10,11 +10,8 @@ import { EventRegistrationService } from './event-registration.service';
   controllers: [EventController],
   providers: [
     EventService,
-    {
-      provide: 'IEventRegistrationService',
-      useClass: EventRegistrationService,
-    },
+   EventRegistrationService,
   ],
-  exports: ['IEventRegistrationService', EventService],
+  exports: [EventRegistrationService, EventService],
 })
 export class EventModule {}

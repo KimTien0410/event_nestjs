@@ -9,8 +9,8 @@ export class AttendanceRegister {
 
     static toEntity(attendanceRegister: AttendanceRegister): Partial<AttendanceEntity> {
         return {
-            userEntity: { id: attendanceRegister.userId } as UserEntity,
-            eventEntity: { id: attendanceRegister.eventId } as EventEntity,
+            userId: attendanceRegister.userId,
+            eventId: attendanceRegister.eventId,
         };
     }
 }

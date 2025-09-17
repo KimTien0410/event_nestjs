@@ -17,8 +17,8 @@ export class Attendance {
     static fromEntity(attendanceEntity: AttendanceEntity): Attendance {
         return {
             id: attendanceEntity.id,
-            eventId: attendanceEntity.eventEntity.id,
-            userId: attendanceEntity.userEntity.id,
+            eventId: attendanceEntity.eventId,
+            userId: attendanceEntity.userId,
             registeredAt: attendanceEntity.registeredAt,
             status: attendanceEntity.status,
             cancelledAt: attendanceEntity.cancelledAt ?? null,
@@ -26,6 +26,8 @@ export class Attendance {
     }
 
     static fromEntities(attendanceEntities: AttendanceEntity[]): Attendance[] {
-        return attendanceEntities.map((attendanceEntity) => this.fromEntity(attendanceEntity));
+        return attendanceEntities.map((attendanceEntity) =>
+            Attendance.fromEntity(attendanceEntity)
+        );
     }
 }

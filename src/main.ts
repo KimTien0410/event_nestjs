@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -33,6 +35,11 @@ async function bootstrap() {
       persistAuthorization: true,
     },
   });
+
+   const dataSource = app.get(DataSource);
+
+  addTransactionalDataSource(dataSource);
+
 
   await app.listen(process.env.PORT ?? 4000);
 }

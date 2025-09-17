@@ -9,12 +9,14 @@ import {
   Delete,
   HttpStatus,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { AttendanceRegister } from './domain/attendace-register';
 import { AttendanceService } from './attendance.service';
 import { AttendanceDto } from './dto/attendance.dto';
 import { AttendanceRegisterDto } from './dto/attendance-register.dto';
 import { AttendanceCancelDto } from './dto/attendance-cancel.dto';
+import {  UserTopRegistrationDto } from '../user/dto/user-top-registration.dto';
 
 @Controller('attendances')
 export class AttendanceController {
@@ -31,10 +33,15 @@ export class AttendanceController {
 
   @Patch('cancel/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  cancel(@Param('id') id: number, @Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
-    return this.attendanceService.cancel(
-      id,
-      AttendanceCancelDto.toAttendanceCancel(attendanceCancelDto)
+  cancel(@Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
+    return this.attendanceService.cancel(AttendanceCancelDto.toAttendanceCancel(attendanceCancelDto)
+    );
+  }
+
+  @Get('top-users')
+  async getTopUsers(@Query('limit') limit: number): Promise<UserTopRegistrationDto[]> {
+    return UserTopRegistrationDto.fromDomains(
+      await this.attendanceService.getTopUsersByAttendance(limit)
     );
   }
 }

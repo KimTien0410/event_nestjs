@@ -4,38 +4,37 @@ import { AttendanceStatus } from "../domain/attendance-status";
 import { EventEntity } from '../../event/entities/event.entity';
 
 @Entity('attendances')
-@Unique(['userEntity', 'eventEntity'])
+@Unique(['userId', 'eventId'])
 export class AttendanceEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @ManyToOne(() => UserEntity,
-        (user) => user.attendanceEntities,
-        { onDelete: 'CASCADE' }
-    )
-    @JoinColumn({ name: 'userId' })
-    userEntity: UserEntity;
+  @Column({ name: 'userId' })
+  userId: number;
 
-    @ManyToOne(() => EventEntity,
-        (eventEntity) => eventEntity.attendanceEntities,
-        { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'eventId' })
-    eventEntity: EventEntity;
+  @ManyToOne(() => UserEntity, (user) => user.attendances, {
+    onDelete: 'CASCADE',
+  })
+  user: UserEntity;
 
-    @Column({
-        type: 'timestamp',
-        default: () => 'CURRENT_TIMESTAMP'
+  @Column({ name: 'eventId' })
+  eventId: number;
+
+  @ManyToOne(() => EventEntity, (eventEntity) => eventEntity.attendances, {
+        onDelete: 'CASCADE'
     })
-    registeredAt: Date;
+  event: EventEntity;
 
-    @Column({
-        type: 'enum',
-        enum: AttendanceStatus,
-        default: AttendanceStatus.REGISTERED
-    })
-    status: AttendanceStatus;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  registeredAt: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
-    cancelledAt: Date | null;
+  @Column({
+    type: 'enum',
+    enum: AttendanceStatus,
+    default: AttendanceStatus.REGISTERED,
+  })
+  status: AttendanceStatus;
 
+  @Column({ type: 'timestamp', nullable: true })
+  cancelledAt: Date | null;
 }
