@@ -69,7 +69,7 @@ export class AttendanceService {
         eventId: attendanceCancel.eventId,
         status: AttendanceStatus.REGISTERED,
     });
-    
+
     if (!attendance) {
       throw new BadRequestException(
         'No active registration found for this user and event',
@@ -80,9 +80,7 @@ export class AttendanceService {
     await this.attendanceRepository.save(attendance);
   }
 
-  async getTopUsersByAttendance(
-    limit: number = 100,
-  ): Promise<UserTopRegistration[]> {
+  async getTopUsersByAttendance( limit: number = 100 ): Promise<UserTopRegistration[]> {
     const users = await this.attendanceRepository
       .createQueryBuilder('attendance')
       .select('attendance.userId', 'userId')
