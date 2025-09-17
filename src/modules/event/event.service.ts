@@ -58,7 +58,7 @@ export class EventService {
     await this.eventRepository.remove(await this.findEventOrThrow(id));
   }
 
-  private async findEventOrThrow(id: number): Promise<EventEntity> {
+  async findEventOrThrow(id: number): Promise<EventEntity> {
     const eventEntity = await this.eventRepository.findOneBy({ id });
 
     if (!eventEntity) {

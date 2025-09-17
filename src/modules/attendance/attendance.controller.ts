@@ -1,0 +1,40 @@
+import { Attendance } from './domain/attendance';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
+import { AttendanceRegister } from './domain/attendace-register';
+import { AttendanceService } from './attendance.service';
+import { AttendanceDto } from './dto/attendance.dto';
+import { AttendanceRegisterDto } from './dto/attendance-register.dto';
+import { AttendanceCancelDto } from './dto/attendance-cancel.dto';
+
+@Controller('attendances')
+export class AttendanceController {
+  constructor(private readonly attendanceService: AttendanceService) {}
+
+  @Post('register')
+  async register(@Body() attendanceRegisterDto: AttendanceRegisterDto): Promise<AttendanceDto> {
+    return AttendanceDto.fromDomain(
+      await this.attendanceService.register(
+        AttendanceRegisterDto.toAttendanceRegister(attendanceRegisterDto),
+      ),
+    );
+  }
+
+  @Patch('cancel/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  cancel(@Param('id') id: number, @Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
+    return this.attendanceService.cancel(
+      id,
+      AttendanceCancelDto.toAttendanceCancel(attendanceCancelDto)
+    );
+  }
+}

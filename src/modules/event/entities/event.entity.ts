@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { EventStatus } from '../domain/event-status';
 import { EventType } from '../domain/event-type';
+import { AttendanceEntity } from '../../attendance/entities/attendance.entity';
 
 @Entity('events')
 export class EventEntity {
@@ -25,7 +27,7 @@ export class EventEntity {
   @Column({ type: 'timestamp' })
   timeEnd: Date;
 
-  @Column({ nullable: true, type: "varchar", length: 255 })
+  @Column({ nullable: true, type: 'varchar', length: 255 })
   venue: string | null;
 
   @Column()
@@ -53,4 +55,13 @@ export class EventEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(
+    () => AttendanceEntity,
+    (attendanceEntity) => attendanceEntity.eventEntity,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  attendanceEntities: AttendanceEntity[];
 }

@@ -55,7 +55,7 @@ export class UserService {
     }
   }
 
-  private async findUserOrThrow(id: number): Promise<UserEntity> {
+  async findUserOrThrow(id: number): Promise<UserEntity> {
     const userEntity = await this.userRepository.findOneBy({ id });
 
     if (!userEntity) {
