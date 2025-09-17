@@ -22,12 +22,10 @@ export class AttendanceService {
 
   @Transactional()
   async register(attendanceRegister: AttendanceRegister): Promise<Attendance> {
-    const existing = await this.attendanceRepository.findOne({
-      where: {
+    const existing = await this.attendanceRepository.findOneBy({
         userId: attendanceRegister.userId,
         eventId: attendanceRegister.eventId,
         status: AttendanceStatus.REGISTERED,
-      },
     });
 
     if (existing) {
@@ -56,26 +54,6 @@ export class AttendanceService {
       throw new BadRequestException('Event has reached its capacity');
     }
 
-    // Check for time conflicts with user's other registered events
-    const conflicting = await this.attendanceRepository
-      .createQueryBuilder('attendance')
-      .innerJoin('attendance.event', 'event')
-      .where('attendance.userId = :userId', {
-        userId: attendanceRegister.userId,
-      })
-      .andWhere('attendance.status = :status', {
-        status: AttendanceStatus.REGISTERED,
-      })
-      .andWhere('(event.timeStart < :newEnd AND event.timeEnd > :newStart)', {
-        newStart: event.timeStart,
-        newEnd: event.timeEnd,
-      })
-      .getCount();
-
-    if (conflicting > 0) {
-      throw new BadRequestException('User has a conflicting event');
-    }
-
     return Attendance.fromEntity(
       await this.attendanceRepository.save({
         userId: attendanceRegister.userId,
@@ -86,13 +64,12 @@ export class AttendanceService {
   }
 
   async cancel(attendanceCancel: AttendanceCancel): Promise<void> {
-    const attendance = await this.attendanceRepository.findOne({
-      where: {
+    const attendance = await this.attendanceRepository.findOneBy({
         userId: attendanceCancel.userId,
         eventId: attendanceCancel.eventId,
         status: AttendanceStatus.REGISTERED,
-      },
     });
+    
     if (!attendance) {
       throw new BadRequestException(
         'No active registration found for this user and event',

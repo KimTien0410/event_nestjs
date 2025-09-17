@@ -31,7 +31,7 @@ export class AttendanceController {
     );
   }
 
-  @Patch('cancel/:id')
+  @Patch('cancel')
   @HttpCode(HttpStatus.NO_CONTENT)
   cancel(@Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
     return this.attendanceService.cancel(AttendanceCancelDto.toAttendanceCancel(attendanceCancelDto)

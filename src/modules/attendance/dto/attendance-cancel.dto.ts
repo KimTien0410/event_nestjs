@@ -5,14 +5,6 @@ import { ApiProperty } from "@nestjs/swagger";
 export class AttendanceCancelDto {
     @ApiProperty({
         example: 1,
-        description: 'Attendance Cancel ID',
-    })
-    @IsNotEmpty()
-    @IsNumber()
-    id: number;
-
-    @ApiProperty({
-        example: 1,
         description: 'User ID',
     })
     @IsNotEmpty()
@@ -29,7 +21,6 @@ export class AttendanceCancelDto {
     
     static toAttendanceCancel(attendanceCancelDto: AttendanceCancelDto): AttendanceCancel {
         return {
-            id: attendanceCancelDto.id,
             userId: attendanceCancelDto.userId,
             eventId: attendanceCancelDto.eventId,
         };

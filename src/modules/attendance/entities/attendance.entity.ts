@@ -9,7 +9,7 @@ export class AttendanceEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'userId' })
+  @Column()
   userId: number;
 
   @ManyToOne(() => UserEntity, (user) => user.attendances, {
@@ -17,7 +17,7 @@ export class AttendanceEntity {
   })
   user: UserEntity;
 
-  @Column({ name: 'eventId' })
+  @Column()
   eventId: number;
 
   @ManyToOne(() => EventEntity, (eventEntity) => eventEntity.attendances, {
