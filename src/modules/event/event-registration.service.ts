@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { EventEntity } from "./entities/event.entity";
 import { Event } from "./domain/event";
 import { AttendanceStatus } from "../attendance/domain/attendance-status";
@@ -13,10 +13,8 @@ export class EventRegistrationService {
     private readonly eventRepository: Repository<EventEntity>,
   ) {}
 
-  async getEventForRegistration(eventId: number, manager?: EntityManager): Promise<Event> {
-    const event = await this.eventRepository.findOne({
-      where: { id: eventId },
-    });
+  async getEventForRegistration(eventId: number): Promise<Event> {
+    const event = await this.eventRepository.findOneBy({ id: eventId });
 
     if (!event) {
       throw new BadRequestException('Event not found');
@@ -26,19 +24,16 @@ export class EventRegistrationService {
   }
 
   async getCurrentAttendantCount(eventId: number): Promise<number> {
-
     return this.eventRepository.count({
       where: {
         id: eventId,
         attendances: { status: AttendanceStatus.REGISTERED }
-      },
-      relations: ['attendances']
+      }
     });
   }
 
-  async isEventRegistrable(eventId: number, manager?: EntityManager): Promise<boolean> {
-    const repository = manager ? manager.getRepository(EventEntity) : this.eventRepository;
-    const event = await repository.findOne({ where: { id: eventId } });
+  async isEventRegistrable(eventId: number): Promise<boolean> {
+    const event = await this.eventRepository.findOneBy({ id: eventId });
 
     if (!event) {
       throw new BadRequestException('Event not found');

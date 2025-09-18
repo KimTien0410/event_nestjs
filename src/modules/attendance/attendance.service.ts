@@ -22,45 +22,52 @@ export class AttendanceService {
 
   @Transactional()
   async register(attendanceRegister: AttendanceRegister): Promise<Attendance> {
-    const existing = await this.attendanceRepository.findOneBy({
-        userId: attendanceRegister.userId,
-        eventId: attendanceRegister.eventId,
-        status: AttendanceStatus.REGISTERED,
-    });
+    try {
+        const existing = await this.attendanceRepository.findOneBy({
+          userId: attendanceRegister.userId,
+          eventId: attendanceRegister.eventId,
+          status: AttendanceStatus.REGISTERED,
+      });
 
-    if (existing) {
-      throw new BadRequestException(
-        'User is already registered for this event',
-      );
-    }
+      if (existing) {
+        throw new BadRequestException(
+          'User is already registered for this event',
+        );
+      }
 
-    // Check if the event is still open for registration
-
-    const event = await this.eventRegistrationService.getEventForRegistration(
-      attendanceRegister.eventId,
-    );
-
-    if (event.status !== EventStatus.UPCOMING) {
-      throw new BadRequestException('Event is not open for registration');
-    }
-
-    // Check if the event has reached its capacity
-    const currentAttendants =
-      await this.eventRegistrationService.getCurrentAttendantCount(
+      // Check if the event is still open for registration
+      const event = await this.eventRegistrationService.getEventForRegistration(
         attendanceRegister.eventId,
       );
 
-    if (currentAttendants >= event.capacity) {
-      throw new BadRequestException('Event has reached its capacity');
-    }
+      if (event.status !== EventStatus.UPCOMING) {
+        throw new BadRequestException('Event is not open for registration');
+      }
 
-    return Attendance.fromEntity(
-      await this.attendanceRepository.save({
-        userId: attendanceRegister.userId,
-        eventId: attendanceRegister.eventId,
-        status: AttendanceStatus.REGISTERED,
-      }),
-    );
+      // Check if the event has reached its capacity
+      const currentAttendants =
+        await this.eventRegistrationService.getCurrentAttendantCount(
+          attendanceRegister.eventId,
+        );
+
+      if (currentAttendants >= event.capacity) {
+        throw new BadRequestException('Event has reached its capacity');
+      }
+
+      return Attendance.fromEntity(
+        await this.attendanceRepository.save({
+          userId: attendanceRegister.userId,
+          eventId: attendanceRegister.eventId,
+          status: AttendanceStatus.REGISTERED,
+        }),
+      );
+    } catch (error) {
+      if(error.code === '23505') {
+        throw new BadRequestException('User is already registered for this event');
+      }
+      throw new BadRequestException(error.message);
+    }
+    
   }
 
   async cancel(attendanceCancel: AttendanceCancel): Promise<void> {
@@ -75,9 +82,12 @@ export class AttendanceService {
         'No active registration found for this user and event',
       );
     }
-    attendance.status = AttendanceStatus.CANCELLED;
-    attendance.cancelledAt = new Date();
-    await this.attendanceRepository.save(attendance);
+    
+    await this.attendanceRepository.save({
+      ...attendance,
+      status: AttendanceStatus.CANCELLED,
+      cancelledAt: new Date(),
+    });
   }
 
   async getTopUsersByAttendance( limit: number = 100 ): Promise<UserTopRegistration[]> {
@@ -101,10 +111,10 @@ export class AttendanceService {
     return users.map(
       (u) =>
         new UserTopRegistration(
-          parseInt(u.userId, 10),
+          +u.userId,
           u.userName,
           u.userEmail,
-          parseInt(u.registrationCount, 10),
+          +u.registrationCount,
         ),
     );
   }
