@@ -35,6 +35,17 @@ export class AttendanceService {
         );
       }
 
+      const attendanceCancelled = await this.attendanceRepository.findOneBy({
+        userId: attendanceRegister.userId,
+        eventId: attendanceRegister.eventId,
+        status: AttendanceStatus.CANCELLED,
+      });
+      if (attendanceCancelled) {
+        throw new BadRequestException(
+          'User has cancelled registration for this event',
+        );
+      }
+
       // Check if the event is still open for registration
       const event = await this.eventRegistrationService.getEventForRegistration(
         attendanceRegister.eventId,
@@ -62,9 +73,6 @@ export class AttendanceService {
         }),
       );
     } catch (error) {
-      if(error.code === '23505') {
-        throw new BadRequestException('User is already registered for this event');
-      }
       throw new BadRequestException(error.message);
     }
     

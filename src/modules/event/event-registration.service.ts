@@ -24,12 +24,12 @@ export class EventRegistrationService {
   }
 
   async getCurrentAttendantCount(eventId: number): Promise<number> {
-    return this.eventRepository.count({
-      where: {
+    return this.eventRepository.countBy(
+      {
         id: eventId,
-        attendances: { status: AttendanceStatus.REGISTERED }
-      }
-    });
+        attendances: { status: AttendanceStatus.REGISTERED },
+      },
+    );
   }
 
   async isEventRegistrable(eventId: number): Promise<boolean> {
