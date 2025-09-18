@@ -22,7 +22,7 @@ import {  UserTopRegistrationDto } from '../user/dto/user-top-registration.dto';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
-  @Post('register')
+  @Post()
   async register(@Body() attendanceRegisterDto: AttendanceRegisterDto): Promise<AttendanceDto> {
     return AttendanceDto.fromDomain(
       await this.attendanceService.register(
@@ -33,8 +33,8 @@ export class AttendanceController {
 
   @Patch('cancel')
   @HttpCode(HttpStatus.NO_CONTENT)
-  cancel(@Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
-    return this.attendanceService.cancel(
+  async cancel(@Body() attendanceCancelDto: AttendanceCancelDto): Promise<void> {
+    return await this.attendanceService.cancel(
       AttendanceCancelDto.toAttendanceCancel(attendanceCancelDto)
     );
   }
