@@ -106,9 +106,12 @@ export class IcsService {
 
     await Promise.all(mailPromises);
 
+
+
     return {
       message: `ICS invite sent to ${attendances.length} attendees`,
-      icsContent
+      icsContent,
     };
   }
+
 }
