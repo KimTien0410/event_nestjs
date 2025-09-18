@@ -13,6 +13,7 @@ import { EventEntity } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { Event } from './domain/event';
 import { EventUpdate } from './domain/event-update';
+import { AttendanceStatus } from '../attendance/domain/attendance-status';
 
 @Injectable()
 export class EventService {
@@ -43,9 +44,9 @@ export class EventService {
     const eventEntity = await this.findEventOrThrow(id);
     EventService.validateEventTime(
       updateEvent.timeStart ?? eventEntity.timeStart,
-      updateEvent.timeEnd ?? eventEntity.timeEnd
+      updateEvent.timeEnd ?? eventEntity.timeEnd,
     );
-    
+
     return Event.fromEntity(
       await this.eventRepository.save({
         ...eventEntity,
@@ -58,7 +59,7 @@ export class EventService {
     await this.eventRepository.remove(await this.findEventOrThrow(id));
   }
 
-  private async findEventOrThrow(id: number): Promise<EventEntity> {
+  async findEventOrThrow(id: number): Promise<EventEntity> {
     const eventEntity = await this.eventRepository.findOneBy({ id });
 
     if (!eventEntity) {
@@ -76,11 +77,18 @@ export class EventService {
     }
 
     if (timeEnd <= now) {
-        throw new BadRequestException('End time must be in the future');
+      throw new BadRequestException('End time must be in the future');
     }
 
     if (timeEnd <= timeStart) {
-        throw new BadRequestException('End time must be after start time');
-      }
+      throw new BadRequestException('End time must be after start time');
+    }
+  }
+
+  async getCurrentAttendantCount(eventId: number): Promise<number> {
+    return this.eventRepository.countBy({
+      id: eventId,
+      attendances: { status: AttendanceStatus.REGISTERED },
+    });
   }
 }

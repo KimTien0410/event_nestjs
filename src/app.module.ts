@@ -5,6 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/user/user.module';
 import { EventModule } from './modules/event/event.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { DataSource } from 'typeorm';
+import { initializeTransactionalContext } from 'typeorm-transactional';
+import { patchTypeORMRepositoryWithBaseRepository } from 'typeorm-transactional-cls-hooked';
+
 
 @Module({
   imports: [
@@ -18,13 +23,19 @@ import { EventModule } from './modules/event/event.module';
       database: process.env.DATABASE_NAME,
       synchronize: false,
       logging: true,
-      entities: [__dirname + '/modules/**/*.entity.{js,ts}'],
+      entities: [__dirname + '/modules/**/entities/*.entity.{js,ts}'],
       migrations: [__dirname + '/migrations/*{.ts,.js}'],
     }),
     UserModule,
     EventModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private dataSource: DataSource) {
+    initializeTransactionalContext();
+    patchTypeORMRepositoryWithBaseRepository();
+  }
+}
