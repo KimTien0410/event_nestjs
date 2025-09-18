@@ -10,72 +10,65 @@ import { AttendanceCancel } from './domain/attendance-cancel';
 import { UserTopRegistration } from '../user/domain/user-top-registration';
 import { UserEntity } from '../user/entities/user.entity';
 import { Transactional } from 'typeorm-transactional';
-import { EventRegistrationService } from '../event/event-registration.service';
+import { EventService } from '../event/event.service';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectRepository(AttendanceEntity)
-    private attendanceRepository: Repository<AttendanceEntity>,
-    private readonly eventRegistrationService: EventRegistrationService,
+    private readonly attendanceRepository: Repository<AttendanceEntity>,
+    private readonly eventService: EventService,
   ) {}
 
   @Transactional()
   async register(attendanceRegister: AttendanceRegister): Promise<Attendance> {
-    try {
-        const existing = await this.attendanceRepository.findOneBy({
-          userId: attendanceRegister.userId,
-          eventId: attendanceRegister.eventId,
-          status: AttendanceStatus.REGISTERED,
-      });
+    const existing = await this.attendanceRepository.findOneBy({
+      userId: attendanceRegister.userId,
+      eventId: attendanceRegister.eventId,
+      status: AttendanceStatus.REGISTERED,
+    });
 
-      if (existing) {
-        throw new BadRequestException(
-          'User is already registered for this event',
-        );
-      }
+    if (existing) {
+      throw new BadRequestException(
+        'User is already registered for this event',
+      );
+    }
 
-      const attendanceCancelled = await this.attendanceRepository.findOneBy({
+    const attendanceCancelled = await this.attendanceRepository.findOneBy({
+      userId: attendanceRegister.userId,
+      eventId: attendanceRegister.eventId,
+      status: AttendanceStatus.CANCELLED,
+    });
+
+    if (attendanceCancelled) {
+      throw new BadRequestException('User has cancelled registration for this event');
+    }
+
+    // Check if the event is still open for registration
+    const event = await this.eventService.findEventOrThrow(
+      attendanceRegister.eventId,
+    );
+
+    if (event.status !== EventStatus.UPCOMING) {
+      throw new BadRequestException('Event is not open for registration');
+    }
+
+    // Check if the event has reached its capacity
+    const currentAttendants = await this.eventService.getCurrentAttendantCount(
+      attendanceRegister.eventId,
+    );
+
+    if (currentAttendants >= event.capacity) {
+      throw new BadRequestException('Event has reached its capacity');
+    }
+
+    return Attendance.fromEntity(
+      await this.attendanceRepository.save({
         userId: attendanceRegister.userId,
         eventId: attendanceRegister.eventId,
-        status: AttendanceStatus.CANCELLED,
-      });
-      if (attendanceCancelled) {
-        throw new BadRequestException(
-          'User has cancelled registration for this event',
-        );
-      }
-
-      // Check if the event is still open for registration
-      const event = await this.eventRegistrationService.getEventForRegistration(
-        attendanceRegister.eventId,
-      );
-
-      if (event.status !== EventStatus.UPCOMING) {
-        throw new BadRequestException('Event is not open for registration');
-      }
-
-      // Check if the event has reached its capacity
-      const currentAttendants =
-        await this.eventRegistrationService.getCurrentAttendantCount(
-          attendanceRegister.eventId,
-        );
-
-      if (currentAttendants >= event.capacity) {
-        throw new BadRequestException('Event has reached its capacity');
-      }
-
-      return Attendance.fromEntity(
-        await this.attendanceRepository.save({
-          userId: attendanceRegister.userId,
-          eventId: attendanceRegister.eventId,
-          status: AttendanceStatus.REGISTERED,
-        }),
-      );
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-    
+        status: AttendanceStatus.REGISTERED,
+      }),
+    );
   }
 
   async cancel(attendanceCancel: AttendanceCancel): Promise<void> {
@@ -86,9 +79,7 @@ export class AttendanceService {
     });
 
     if (!attendance) {
-      throw new BadRequestException(
-        'No active registration found for this user and event',
-      );
+      throw new BadRequestException('No active registration found for this user and event');
     }
     
     await this.attendanceRepository.save({
@@ -117,13 +108,12 @@ export class AttendanceService {
       .getRawMany();
 
     return users.map(
-      (u) =>
-        new UserTopRegistration(
-          +u.userId,
-          u.userName,
-          u.userEmail,
-          +u.registrationCount,
-        ),
+      (user) =>({
+        userId: +user.userId,
+        userName: user.userName,
+        userEmail: user.userEmail,
+        registrationCount: +user.registrationCount
+      }),
     );
   }
 }

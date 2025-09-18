@@ -9,25 +9,13 @@ export class UserTopRegistration {
 
     registrationCount: number;
 
-    constructor(
-        userId: number,
-        userName: string,
-        userEmail: string,
-        registrationCount: number,
-    ) {
-        this.userId = userId;
-        this.userName = userName;
-        this.userEmail = userEmail;
-        this.registrationCount = registrationCount;
-    }
-
     static fromEntity(userEntity: UserEntity, registrationCount: number): UserTopRegistration {
-        return new UserTopRegistration(
-            userEntity.id,
-            userEntity.name,
-            userEntity.email,
-            registrationCount,
-        );
+        return {
+            userId: userEntity.id,
+            userName: userEntity.name,
+            userEmail: userEntity.email,
+            registrationCount
+        };
     }
 
     static fromEntities(userEntities: UserEntity[], registrationCounts: number[]): UserTopRegistration[] {
