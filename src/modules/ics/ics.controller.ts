@@ -1,22 +1,30 @@
 import {
   Body,
   Controller,
+  Get,
+  NotFoundException,
+  Param,
   Post,
+  Res,
 } from '@nestjs/common';
 import { IcsService } from './ics.service';
 import { IcsInviteDto } from './dto/ics-invite.dto';
 import { IcsCreateInviteDto } from './dto/ics-create-invite.dto';
+import type { Response } from 'express';
 
 @Controller('ics')
 export class IcsController {
-  constructor(private readonly icsService: IcsService) { }
+  constructor(private readonly icsService: IcsService) {}
 
-  @Post()
-  async inviteUser(@Body() icsCreateInviteDto: IcsCreateInviteDto): Promise<IcsInviteDto>{
-    return IcsInviteDto.fromDomain(
-      await this.icsService.sendICSInvite(
-        IcsCreateInviteDto.toIcsCreateInvite(icsCreateInviteDto),
-      ),
+  @Get(':eventId.ics')
+  async getIcsFile(@Param('eventId') eventId: number, @Res() res: Response) {
+    const icsContent = await this.icsService.generateIcsContent(eventId);
+
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename=event-${eventId}.ics`,
     );
+    res.send(icsContent);
   }
 }

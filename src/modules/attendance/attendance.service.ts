@@ -125,7 +125,9 @@ export class AttendanceService {
         eventId,
         status: AttendanceStatus.REGISTERED
       },
-      relations: ['user']
+      relations: {
+        'user': true
+      }
     });
     const users = attendances.map(attendance => attendance.user);
     return User.fromEntities(users);
