@@ -1,30 +1,19 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EventService } from '../event/event.service';
 import { AttendanceService } from '../attendance/attendance.service';
-import * as nodemailer from 'nodemailer';
 import { IcsCreateInvite } from './domain/ics-create-invite';
 import { IcsInvite } from './domain/ics-invite';
 import { createEvent, EventAttributes } from 'ics';
-import { In } from 'typeorm';
-
+import type { v2 as CloudinaryType } from 'cloudinary';
 
 @Injectable()
 export class IcsService {
   constructor(
     private readonly eventService: EventService,
-    private readonly attendanceService: AttendanceService
+    private readonly attendanceService: AttendanceService,
+    @Inject('CLOUDINARY')
+    private readonly cloudinary: typeof CloudinaryType
   ) { }
-  
-  private createTransporter() {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
-  }
-  
   async sendICSInvite(icsCreateInvite: IcsCreateInvite): Promise<IcsInvite> {
     const event = await this.eventService.findEventOrThrow(icsCreateInvite.eventId);
 
@@ -77,41 +66,26 @@ export class IcsService {
 
     const { error, value } = createEvent(icsEvent);
 
-
-    if (error) {
+    if (error || !value) {
       throw new Error('Failed to create ICS event');
     }
 
-    const icsContent = value;
+    const icsContent: string = value; 
 
-    const transporter = this.createTransporter();
-
-    const mailPromises = attendances.map(att => {
-      const mailOptions = {
-        from: process.env.SMTP_USER,
-        to: att.email,
-        subject: `Invitation: ${event.title}`,
-        text: icsCreateInvite.description || 'You are invited to the event!',
-        attachments: [
-          {
-            filename: `event-${event.id}.ics`,
-            content: icsContent,
-            contentType: 'text/calendar; method=REQUEST',
-          },
-        ],
-      };
-
-      return transporter.sendMail(mailOptions);
-    });
-
-    await Promise.all(mailPromises);
-
-
+    const uploadResult = await this.cloudinary.uploader.upload(
+      `data:text/calendar;base64,${Buffer.from(icsContent).toString('base64')}`,
+      {
+        resource_type: 'raw',
+        folder: 'ics-events',
+        public_id: `event-${event.id}`,
+        overwrite: true,
+        format: 'ics',
+      },
+    );
 
     return {
-      message: `ICS invite sent to ${attendances.length} attendees`,
-      icsContent,
+      message: `ICS invite uploaded for ${attendances.length} attendees`,
+      linkUrl: uploadResult.secure_url,
     };
   }
-
 }

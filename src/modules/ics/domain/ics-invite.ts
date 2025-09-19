@@ -1,5 +1,5 @@
 export class IcsInvite{
     message: string;
     
-    icsContent?: string;
+    linkUrl: string;
 }

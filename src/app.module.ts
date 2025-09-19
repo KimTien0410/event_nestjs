@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { patchTypeORMRepositoryWithBaseRepository } from 'typeorm-transactional-cls-hooked';
 import { IcsModule } from './modules/ics/ics.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { IcsModule } from './modules/ics/ics.module';
     EventModule,
     AttendanceModule,
     IcsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

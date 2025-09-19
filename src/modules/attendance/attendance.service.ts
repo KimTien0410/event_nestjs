@@ -119,14 +119,16 @@ export class AttendanceService {
   }
 
   async getUserAttendances(userId: number, eventId: number): Promise<User[]> {
-    const users = await this.attendanceRepository.
-      createQueryBuilder('attendance')
-      .innerJoinAndSelect('attendance.user', 'user')
-      .where('attendance.userId = :userId', { userId })
-      .andWhere('attendance.eventId = :eventId', { eventId })
-      .andWhere('attendance.status = :status', { status: AttendanceStatus.REGISTERED })
-      .getMany();
-    return users.map(att => User.fromEntity(att.user));
+    const attendances = await this.attendanceRepository.find({
+      where: {
+        userId,
+        eventId,
+        status: AttendanceStatus.REGISTERED
+      },
+      relations: ['user']
+    });
+    const users = attendances.map(attendance => attendance.user);
+    return User.fromEntities(users);
   }
 
 }
