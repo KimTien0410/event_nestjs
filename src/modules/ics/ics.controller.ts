@@ -8,8 +8,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { IcsService } from './ics.service';
-import { IcsInviteDto } from './dto/ics-invite.dto';
-import { IcsCreateInviteDto } from './dto/ics-create-invite.dto';
 import type { Response } from 'express';
 
 @Controller('ics')

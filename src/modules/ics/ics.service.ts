@@ -1,10 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EventService } from '../event/event.service';
-import { AttendanceService } from '../attendance/attendance.service';
-import { IcsCreateInvite } from './domain/ics-create-invite';
-import { IcsInvite } from './domain/ics-invite';
 import { createEvent, EventAttributes } from 'ics';
-import type { v2 as CloudinaryType } from 'cloudinary';
 
 @Injectable()
 export class IcsService {
@@ -48,7 +44,7 @@ export class IcsService {
     if (error || !value) {
       throw new Error('Failed to create ICS event');
     }
-    
+
     return value;
   }
 }
