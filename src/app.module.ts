@@ -9,7 +9,7 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
 import { DataSource } from 'typeorm';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { patchTypeORMRepositoryWithBaseRepository } from 'typeorm-transactional-cls-hooked';
-
+import { IcsModule } from './modules/ics/ics.module';
 
 @Module({
   imports: [
@@ -29,6 +29,7 @@ import { patchTypeORMRepositoryWithBaseRepository } from 'typeorm-transactional-
     UserModule,
     EventModule,
     AttendanceModule,
+    IcsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

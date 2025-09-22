@@ -11,6 +11,7 @@ import { UserTopRegistration } from '../user/domain/user-top-registration';
 import { UserEntity } from '../user/entities/user.entity';
 import { Transactional } from 'typeorm-transactional';
 import { EventService } from '../event/event.service';
+import { Event } from '../event/domain/event';
 
 @Injectable()
 export class AttendanceService {
@@ -116,4 +117,21 @@ export class AttendanceService {
       }),
     );
   }
+
+  async getEventsByUser(userId: number): Promise<Event[]> {
+    const attendances = await this.attendanceRepository.find({
+      where: {
+        userId,
+        status: AttendanceStatus.REGISTERED
+      },
+      relations: {
+        event: true,
+      }
+    });
+   
+    return Event.fromEntities(
+      attendances.map(attendance => attendance.event)
+    );
+  }
+
 }
