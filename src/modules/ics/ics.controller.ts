@@ -10,19 +10,20 @@ import {
 import { IcsService } from './ics.service';
 import type { Response } from 'express';
 
-@Controller('ics')
+@Controller('events')
 export class IcsController {
   constructor(private readonly icsService: IcsService) {}
 
-  @Get(':eventId.ics')
-  async getIcsFile(@Param('eventId') eventId: number, @Res() res: Response) {
-    const icsContent = await this.icsService.generateIcsContent(eventId);
+  @Get('users/:userId/calendar.ics')
+  async getIcsFile(@Param('userId') userId: number, @Res() res: Response) {
+    const icsContent = await this.icsService.getEventsByUser(userId);
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.setHeader(
       'Content-Disposition',
-      `inline; filename=event-${eventId}.ics`,
+      `inline; filename=user-${userId}-events.ics`,
     );
+    
     res.send(icsContent);
   }
 }

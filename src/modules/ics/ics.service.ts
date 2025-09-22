@@ -1,14 +1,20 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EventService } from '../event/event.service';
-import { createEvent, EventAttributes } from 'ics';
+import { createEvents, EventAttributes } from 'ics';
+import { AttendanceService } from '../attendance/attendance.service';
 
 @Injectable()
 export class IcsService {
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    private readonly eventService: EventService,
+    private readonly attendanceService: AttendanceService,
+  ) { }
 
-  async generateIcsContent(eventId: number) {
-    const event = await this.eventService.findEventOrThrow(eventId);
-    const icsEvent: EventAttributes = {
+
+  async getEventsByUser(userId: number): Promise<string> {
+    const events = await this.attendanceService.getEventsByUser(userId);
+
+    const icsEvents: EventAttributes[] = events.map((event) => ({
       title: event.title,
       description: event.description || undefined,
       start: [
@@ -37,12 +43,12 @@ export class IcsService {
           trigger: { minutes: 30, before: true },
         },
       ],
-    };
+    }));
 
-    const { error, value } = createEvent(icsEvent);
+    const { error, value } = createEvents(icsEvents);
 
     if (error || !value) {
-      throw new Error('Failed to create ICS event');
+      throw new Error('Failed to create ICS file');
     }
 
     return value;
