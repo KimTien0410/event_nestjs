@@ -10,7 +10,7 @@ import {
 import { IcsService } from './ics.service';
 import type { Response } from 'express';
 
-@Controller('events')
+@Controller('calendars')
 export class IcsController {
   constructor(private readonly icsService: IcsService) {}
 
@@ -23,7 +23,7 @@ export class IcsController {
       'Content-Disposition',
       `inline; filename=user-${userId}-events.ics`,
     );
-    
+
     res.send(icsContent);
   }
 }

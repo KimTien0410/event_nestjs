@@ -48,7 +48,7 @@ export class IcsService {
     const { error, value } = createEvents(icsEvents);
 
     if (error || !value) {
-      throw new Error('Failed to create ICS file');
+      throw new Error('Failed to generate calendar');
     }
 
     return value;
