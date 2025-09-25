@@ -1,7 +1,6 @@
 import { UserUpdate } from '../domain/user-update';
-
 import { Gender } from '../domain/gender';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UserUpdateDto {
@@ -55,5 +54,3 @@ export class UserUpdateDto {
     };
   }
 }
-
-

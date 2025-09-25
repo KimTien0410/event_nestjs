@@ -63,16 +63,7 @@ export class CurrentUserDto {
         example: '+1234567890',
         description: 'Phone number of the user'
     })
-    phoneNumber: string;
-
-    @ApiProperty({
-        example: 'single',
-        description: 'Relationship status of the user'
-    })
-    relationshipType?: string;
-
-    // @ApiProperty()
-    // relativeOfId?: Uuid;
+    phoneNumber?: string;
 
     public static fromUser(user: UserEntity): CurrentUserDto {
         return {
