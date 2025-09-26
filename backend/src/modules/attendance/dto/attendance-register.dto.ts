@@ -6,14 +6,6 @@ import type { Uuid } from "src/common/types";
 export class AttendanceRegisterDto {
     @ApiProperty({
         example: 1,
-        description: 'User ID',
-    })
-    @IsNotEmpty()
-    @IsString()
-    userId: Uuid;
-
-    @ApiProperty({
-        example: 1,
         description: 'Event ID',
     })
     @IsNotEmpty()
@@ -22,7 +14,6 @@ export class AttendanceRegisterDto {
 
     static toAttendanceRegister(attendanceRegister: AttendanceRegisterDto): AttendanceRegister {
         return {
-            userId: attendanceRegister.userId,
             eventId: attendanceRegister.eventId,
         };
     }

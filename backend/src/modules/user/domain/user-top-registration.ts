@@ -4,7 +4,9 @@ import { UserEntity } from "../entities/user.entity";
 export class UserTopRegistration {
     userId: Uuid;
 
-    userName: string;
+    userFirstName: string;
+
+    userLastName: string;
 
     userEmail: string;
 
@@ -13,7 +15,8 @@ export class UserTopRegistration {
     static fromEntity(userEntity: UserEntity, registrationCount: number): UserTopRegistration {
         return {
             userId: userEntity.id,
-            userName: userEntity.email,
+            userFirstName: userEntity.firstName,
+            userLastName: userEntity.lastName,
             userEmail: userEntity.email,
             registrationCount
         };

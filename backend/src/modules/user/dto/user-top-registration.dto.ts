@@ -10,8 +10,8 @@ export class UserTopRegistrationDto {
     @ApiProperty({ example: 1, description: 'User ID' })
     userId: Uuid;
 
-    @ApiProperty({ example: 'John Doe', description: 'User Name' })
-    userName: string;
+    @ApiProperty({ example: 'John Doe', description: 'User Full Name' })
+    userFullName: string;
 
     @ApiProperty({ example: 'john.doe@example.com', description: 'User Email' })
     userEmail: string;
@@ -21,10 +21,10 @@ export class UserTopRegistrationDto {
 
     static fromDomain(userTopRegistration: UserTopRegistration): UserTopRegistrationDto {
         return {
-            userId: userTopRegistration.userId,
-            userName: userTopRegistration.userName,
-            userEmail: userTopRegistration.userEmail,
-            registrationCount: userTopRegistration.registrationCount,
+          userId: userTopRegistration.userId,
+          userFullName: `${userTopRegistration.userLastName} ${userTopRegistration.userFirstName}`,
+          userEmail: userTopRegistration.userEmail,
+          registrationCount: userTopRegistration.registrationCount,
         };
     }
     

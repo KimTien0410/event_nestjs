@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConsoleLogger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
@@ -36,6 +35,9 @@ async function bootstrap() {
 
   configureSwagger(app, configService);
   configLogging(app, configService);
+
+  const dataSource = app.get(DataSource);
+  addTransactionalDataSource(dataSource);
 
   await app.listen(configService.serverPort);
 }

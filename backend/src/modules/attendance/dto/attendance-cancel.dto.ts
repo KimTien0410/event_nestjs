@@ -6,14 +6,6 @@ import type { Uuid } from "src/common/types";
 export class AttendanceCancelDto {
     @ApiProperty({
         example: 1,
-        description: 'User ID',
-    })
-    @IsNotEmpty()
-    @IsString()
-    userId: Uuid;
-
-    @ApiProperty({
-        example: 1,
         description: 'Event ID',
     })
     @IsNotEmpty()
@@ -22,7 +14,6 @@ export class AttendanceCancelDto {
 
     static toAttendanceCancel(attendanceCancelDto: AttendanceCancelDto): AttendanceCancel {
         return {
-            userId: attendanceCancelDto.userId,
             eventId: attendanceCancelDto.eventId,
         };
     }

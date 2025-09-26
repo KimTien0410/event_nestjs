@@ -1,5 +1,11 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { InjectRepository} from '@nestjs/typeorm';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager } from 'typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
 import { AttendanceRegister } from './domain/attendace-register';
@@ -12,7 +18,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { Transactional } from 'typeorm-transactional';
 import { EventService } from '../event/event.service';
 import { Event } from '../event/domain/event';
-import { Uuid } from 'src/common/types';
+import type { Uuid } from 'src/common/types';
 
 @Injectable()
 export class AttendanceService {
@@ -23,9 +29,12 @@ export class AttendanceService {
   ) {}
 
   @Transactional()
-  async register(attendanceRegister: AttendanceRegister): Promise<Attendance> {
+  async register(
+    userId: Uuid,
+    attendanceRegister: AttendanceRegister,
+  ): Promise<Attendance> {
     const existing = await this.attendanceRepository.findOneBy({
-      userId: attendanceRegister.userId,
+      userId: userId,
       eventId: attendanceRegister.eventId,
       status: AttendanceStatus.REGISTERED,
     });
@@ -37,13 +46,15 @@ export class AttendanceService {
     }
 
     const attendanceCancelled = await this.attendanceRepository.findOneBy({
-      userId: attendanceRegister.userId,
+      userId: userId,
       eventId: attendanceRegister.eventId,
       status: AttendanceStatus.CANCELLED,
     });
 
     if (attendanceCancelled) {
-      throw new BadRequestException('User has cancelled registration for this event');
+      throw new BadRequestException(
+        'User has cancelled registration for this event',
+      );
     }
 
     // Check if the event is still open for registration
@@ -66,24 +77,35 @@ export class AttendanceService {
 
     return Attendance.fromEntity(
       await this.attendanceRepository.save({
-        userId: attendanceRegister.userId,
+        userId: userId,
         eventId: attendanceRegister.eventId,
         status: AttendanceStatus.REGISTERED,
       }),
     );
   }
 
-  async cancel(attendanceCancel: AttendanceCancel): Promise<void> {
-    const attendance = await this.attendanceRepository.findOneBy({
-        userId: attendanceCancel.userId,
-        eventId: attendanceCancel.eventId,
-        status: AttendanceStatus.REGISTERED,
-    });
+  async cancel(
+    userId: Uuid,
+    attendanceCancel: AttendanceCancel,
+  ): Promise<void> {
+    const event = await this.eventService.findEventOrThrow(
+      attendanceCancel.eventId,
+    );
+    const attendance = await this.findByUserAndEventOrThrow(
+      userId,
+      attendanceCancel.eventId,
+    );
 
-    if (!attendance) {
-      throw new BadRequestException('No active registration found for this user and event');
+    if (attendance.status === AttendanceStatus.CANCELLED) {
+      throw new ConflictException('Attendance is already cancelled');
     }
-    
+
+    if (attendance.status !== AttendanceStatus.REGISTERED) {
+      throw new BadRequestException(
+        `Attendance cannot be cancelled because status = ${attendance.status}`,
+      );
+    }
+
     await this.attendanceRepository.save({
       ...attendance,
       status: AttendanceStatus.CANCELLED,
@@ -91,48 +113,58 @@ export class AttendanceService {
     });
   }
 
-  async getTopUsersByAttendance( limit: number = 100 ): Promise<UserTopRegistration[]> {
-    const users = await this.attendanceRepository
+  async getTopUsersByAttendance(
+    limit: number = 100,
+  ): Promise<UserTopRegistration[]> {
+    return this.attendanceRepository
       .createQueryBuilder('attendance')
+      .innerJoin('attendance.user', 'u')
       .select('attendance.userId', 'userId')
-      .addSelect('user.name', 'userName')
-      .addSelect('user.email', 'userEmail')
+      .addSelect('u.email', 'userEmail')
+      .addSelect('u.firstName', 'userFirstName')
+      .addSelect('u.lastName', 'userLastName')
       .addSelect('COUNT(attendance.id)', 'registrationCount')
-      .innerJoin(UserEntity, 'user', 'user.id = attendance.userId')
-      .where('attendance.status = :status', {
-        status: AttendanceStatus.REGISTERED,
-      })
+      .where('attendance.status = :status', { status: 'registered' })
       .groupBy('attendance.userId')
-      .addGroupBy('user.name')
-      .addGroupBy('user.email')
+      .addGroupBy('u.firstName')
+      .addGroupBy('u.lastName')
+      .addGroupBy('u.email')
       .orderBy('COUNT(attendance.id)', 'DESC')
       .limit(limit)
       .getRawMany();
-
-    return users.map(
-      (user) =>({
-        userId: user.userId,
-        userName: user.userName,
-        userEmail: user.userEmail,
-        registrationCount: +user.registrationCount
-      }),
-    );
   }
 
   async getEventsByUser(userId: Uuid): Promise<Event[]> {
     const attendances = await this.attendanceRepository.find({
       where: {
         userId,
-        status: AttendanceStatus.REGISTERED
+        status: AttendanceStatus.REGISTERED,
       },
       relations: {
         event: true,
-      }
+      },
     });
-   
+
     return Event.fromEntities(
-      attendances.map(attendance => attendance.event)
+      attendances.map((attendance) => attendance.event),
     );
   }
 
+  async findByUserAndEventOrThrow(
+    userId: Uuid,
+    eventId: Uuid,
+  ): Promise<AttendanceEntity> {
+    const attendance = await this.attendanceRepository.findOne({
+      where: {
+        userId,
+        eventId,
+      },
+    });
+
+    if (!attendance) {
+      throw new NotFoundException('Attendance not found');
+    }
+
+    return attendance;
+  }
 }
