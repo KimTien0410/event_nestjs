@@ -8,7 +8,7 @@ export class User {
 
   role?: RoleType;
 
-  keyCloakId?: Uuid | null;
+  keyCloakId?: Uuid;
 
   firstName: string;
 
@@ -16,13 +16,13 @@ export class User {
 
   email: string;
 
-  picture?: string | null;
+  picture?: string;
 
-  gender?: Gender | null;
+  gender?: Gender;
 
-  birthday?: string | null;
+  birthday?: string;
 
-  phoneNumber?: string | null;
+  phoneNumber?: string;
 
   createdAt: Date;
 

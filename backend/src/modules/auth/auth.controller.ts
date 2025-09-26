@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Post, Put} from '@nestjs/common';
 import {RegisterFormDto} from './dto/register-form.dto';
 import {ApiTags} from "@nestjs/swagger";
 import {AuthService} from "./auth.service";
@@ -9,6 +9,10 @@ import {CurrentUserDto} from "./dto/current-user.dto";
 import {RequireLoggedIn} from "../../guards/role-container";
 import {AuthResultDto} from "./dto/auth-result.dto";
 import {RefreshTokenFormDto} from "./dto/refresh-token-form.dto";
+import { UserUpdateDto } from '../user/dto/user-update.dto';
+import { UpdateProfileForm } from './domain/update-profile-form';
+import { UpdateProfileFormDto } from './dto/update-profile-form.dto';
+import { User } from '../user/domain/user';
 
 @ApiTags('Auths')
 @Controller('auths')
@@ -43,7 +47,22 @@ export class AuthController {
     @Get('me')
     @RequireLoggedIn()
     getMe(@AuthUser() user: UserEntity): CurrentUserDto {
-        return CurrentUserDto.fromUser(user);
+        return CurrentUserDto.fromDomain(user);
     }
-}
 
+    @Put('update-profile')
+    @RequireLoggedIn()
+    async updateProfile(@AuthUser() user: UserEntity, @Body() updateProfileFormDto: UpdateProfileFormDto): Promise<CurrentUserDto> {
+        const updateProfileForm = UpdateProfileFormDto.toUpdateProfileForm(updateProfileFormDto);
+        const updatedUser = await this.authService.updateProfile(user.id, updateProfileForm);
+
+        return CurrentUserDto.fromDomain(updatedUser);
+    }
+
+    @Delete('logout')
+    @RequireLoggedIn()
+    async logout(): Promise<string> {
+        return "Logout success";
+    }
+
+}

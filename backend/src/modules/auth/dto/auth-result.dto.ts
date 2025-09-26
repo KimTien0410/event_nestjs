@@ -13,7 +13,7 @@ export class AuthResultDto {
     public static fromAuthResult(authResult: AuthResult): AuthResultDto {
         return {
             token: TokenDto.fromToken(authResult.token),
-            user: CurrentUserDto.fromUser(authResult.user),
+            user: CurrentUserDto.fromDomain(authResult.user),
         };
     }
 }

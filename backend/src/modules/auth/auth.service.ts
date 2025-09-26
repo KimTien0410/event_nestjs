@@ -1,18 +1,19 @@
+import { UserUpdate } from './../user/domain/user-update';
 import { RegisterForm } from './domain/register-form';
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { KeycloakService } from '../keycloak/keycloak.service';
 import { UserEntity } from '../user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Logger, Repository } from 'typeorm';
 import { LoginForm } from './domain/login-form';
 import { AuthResult } from './domain/auth-result';
 import { RefreshTokenForm } from './domain/refresh-token-form';
-import { ApiConfigService } from '../../shared/services/api-config.service';
 import { Token } from './domain/token';
 import { Uuid } from '../../common/types';
 import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from './domain/token-payload';
-import { LoggingExceptionFilter } from 'src/filter/error-handling-exception-filter';
+import { User } from '../user/domain/user';
+import { UpdateProfileForm } from './domain/update-profile-form';
 
 @Injectable()
 export class AuthService {
@@ -63,6 +64,15 @@ export class AuthService {
       await this.keycloakService.refreshAccessToken(
         refreshTokenForm.refreshToken,
       ),
+    );
+  }
+
+  async updateProfile(userId: Uuid, updateProfileForm: UpdateProfileForm): Promise<User> {
+    return User.fromEntity(
+      await this.userRepository.save({
+        id: userId,
+        ...UpdateProfileForm.toEntity(updateProfileForm),
+      }),
     );
   }
 

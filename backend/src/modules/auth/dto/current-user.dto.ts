@@ -3,6 +3,7 @@ import {Gender} from "../../user/domain/gender";
 import {RoleType} from "../../../guards/role-type";
 import type {Uuid} from "../../../common/types";
 import {ApiProperty} from "@nestjs/swagger";
+import { User } from "src/modules/user/domain/user";
 
 export class CurrentUserDto {
     @ApiProperty({
@@ -65,7 +66,7 @@ export class CurrentUserDto {
     })
     phoneNumber?: string;
 
-    public static fromUser(user: UserEntity): CurrentUserDto {
+    public static fromDomain(user: User): CurrentUserDto {
         return {
             id: user.id,
             email: user.email,
@@ -74,7 +75,7 @@ export class CurrentUserDto {
             fullName: `${user.firstName} ${user.lastName}`,
             picture: user.picture,
             gender: user.gender,
-            role: user.role,
+            role: user.role || RoleType.USER,
             birthday: user.birthday,
             phoneNumber: user.phoneNumber,
         };
