@@ -1,21 +1,69 @@
 services:
-
-  db:
-    image: postgres
-    restart: always
-    # set shared memory limit when using docker compose
-    ports:
-      - 5432:5432
-    shm_size: 128mb
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: backend
+    container_name: backend2
     environment:
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      DB_HOST: database
+      KEYCLOAK_BASE_URL: http://keycloak:8080
+    restart: always
+    ports:
+      - "$PORT:$PORT"
+    depends_on:
+      - database
+      - keycloak
     env_file:
-      .env
+      - .env
 
+  database:
+    build: postgres
+    restart: always
+    container_name: database2
+    environment:
+      POSTGRES_USER: $DB_USERNAME
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_MULTIPLE_DATABASES: $DB_DATABASE, keycloak
+      TZ: "GMT"
+      PGTZ: "GMT"
+    ports:
+      - "$DB_PORT:$DB_PORT"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak2
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://database/keycloak
+      KC_DB_USERNAME: $DB_USERNAME
+      KC_DB_PASSWORD: $DB_PASSWORD
+      KEYCLOAK_ADMIN: $KEYCLOAK_ADMIN
+      KEYCLOAK_ADMIN_PASSWORD: $KEYCLOAK_ADMIN_PASSWORD
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm-export.json -D keycloak.profile.feature.upload_scripts=enabled
+      KEYCLOAK_EXTRA_ARGS: --import-realm
+      KC_LOG_LEVEL: debug
+      KC_LOG_CONSOLE_COLOR: "true"
+      KC_LOG_CONSOLE_OUTPUT: default
+      KC_LOG_LEVEL_EVENTS: info
+      KC_LOG_LEVEL_ADMIN_EVENTS: info
+      KC_LOG_LEVEL_TRANSACTIONS: info
+      KC_LOG_LEVEL_SERVICES: info
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: edge
     volumes:
-      - pg_data:/var/lib/postgresql
-
-volumes:
-  pg_data:
+      - ./keycloak/data:/opt/keycloak/data
+      - ./keycloak/import:/opt/keycloak/data/import
+    ports:
+      - "$KEYCLOAK_PORT:8080"
+    depends_on:
+      - database
+    command:
+      [
+        "start-dev",
+        "--import-realm",
+        "--features=preview",
+        "--spi-scripts-default-provider=default",
+        "--spi-scripts-default-enabled=true",
+        "--spi-authorization-policy-provider-js-enabled=true",
+      ]
