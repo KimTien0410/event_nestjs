@@ -9,10 +9,7 @@ import {Token} from "../auth/domain/token";
 
 @Injectable()
 export class KeycloakService implements OnModuleInit {
-
     private readonly kcAdminClient: KeycloakAdminClient;
-
-    // private readonly logger = new Logger(KeycloakService.name);
 
     constructor(private readonly configService: ApiConfigService) {
         this.kcAdminClient = new KeycloakAdminClient(this.configService.keycloakConfig);
@@ -56,11 +53,6 @@ export class KeycloakService implements OnModuleInit {
     }
 
     async refreshAccessToken(refreshToken: string): Promise<Token> {
-        // this.logger.log("Refreshing access token");
-        // this.logger.log("Refresh token: " + await this.requestToken({
-        //     grant_type: 'refresh_token',
-        //     refresh_token: refreshToken,
-        // }).then(res => res.refreshToken));
         return await this.requestToken({
             grant_type: 'refresh_token',
             refresh_token: refreshToken,
@@ -69,7 +61,7 @@ export class KeycloakService implements OnModuleInit {
 
     private async requestToken(body: any): Promise<Token> {
         const response = await this.performTokenRequest(body)
-        // this.logger.log("Token response: " + JSON.stringify(response.data));
+        
         return {
             accessToken: response.data.access_token,
             refreshToken: response.data.refresh_token,

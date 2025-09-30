@@ -18,6 +18,8 @@ import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { KeycloakModule } from './modules/keycloak/keycloak.module';
 import { SnakeNamingStrategy } from './configuration/snake-naming.strategy';
+import { Type } from 'class-transformer';
+import { TypeOrmConfigService } from './database/typeorm-config.service';
 
 @Module({
   imports: [
@@ -27,20 +29,8 @@ import { SnakeNamingStrategy } from './configuration/snake-naming.strategy';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    TypeOrmModule.forRoot({
-      type: process.env.DB_TYPE as any,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT
-        ? Number.parseInt(process.env.DB_PORT, 10)
-        : 5432,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      synchronize: false,
-      logging: true,
-      namingStrategy: new SnakeNamingStrategy(),
-      entities: [__dirname + '/modules/**/entities/*.entity.{js,ts}'],
-      migrations: [__dirname + '/migrations/*{.ts,.js}'],
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
     }),
     HttpModule.register({
       timeout: 5000,

@@ -8,22 +8,22 @@ import {ApiConfigService} from '../shared/services/api-config.service';
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
     constructor(private configService: ApiConfigService) {
     }
-
+    
     createTypeOrmOptions(): TypeOrmModuleOptions {
         return {
-            type: 'postgres',
-            dropSchema: false,
-            keepConnectionAlive: true,
-            entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-            migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-            cli: {
-                entitiesDir: 'src',
-                subscribersDir: 'subscriber',
-            },
-            migrationsRun: true,
-            namingStrategy: new SnakeNamingStrategy(),
-            ...this.configService.dbConfig,
-            logging: false,
+          type: process.env.DB_TYPE,
+          host: process.env.DB_HOST,
+          port: process.env.DB_PORT
+            ? Number.parseInt(process.env.DB_PORT, 10)
+            : 5432,
+          username: process.env.DB_USERNAME,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_DATABASE,
+          namingStrategy: new SnakeNamingStrategy(),
+          logging: true,
+          entities: [__dirname + '/../modules/**/entities/*.entity{.ts,.js}'],
+          migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+          synchronize: false,
         } as TypeOrmModuleOptions;
     }
 }

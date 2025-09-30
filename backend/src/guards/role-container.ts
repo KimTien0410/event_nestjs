@@ -1,9 +1,14 @@
-import {applyDecorators, SetMetadata} from '@nestjs/common';
+import { JwtAuthGuard } from './../decorator/jwt-auth-guard';
+import {applyDecorators, SetMetadata, UseGuards} from '@nestjs/common';
 
 import {RoleType} from './role-type';
+import { RolesGuard } from './roles.guard';
 
 function requireRole(roles: RoleType[]): MethodDecorator {
-  return applyDecorators(SetMetadata('roles', roles));
+  return applyDecorators(
+    SetMetadata('roles', roles),
+    UseGuards(JwtAuthGuard,RolesGuard),
+  );
 }
 
 export function RequireAdmin(): MethodDecorator {

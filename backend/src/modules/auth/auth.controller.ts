@@ -21,7 +21,6 @@ import { RefreshTokenFormDto } from './dto/refresh-token-form.dto';
 import { UserUpdateDto } from '../user/dto/user-update.dto';
 import { UpdateProfileForm } from './domain/update-profile-form';
 import { UpdateProfileFormDto } from './dto/update-profile-form.dto';
-import { User } from '../user/domain/user';
 
 @ApiTags('Auths')
 @Controller('auths')
@@ -76,9 +75,4 @@ export class AuthController {
 
     return CurrentUserDto.fromDomain(updatedUser);
   }
-
-  @Delete('logout')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @RequireLoggedIn()
-  async logout(): Promise<void> {}
 }

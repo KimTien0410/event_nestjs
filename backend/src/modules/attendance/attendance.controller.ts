@@ -12,7 +12,6 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { AttendanceRegister } from './domain/attendace-register';
 import { AttendanceService } from './attendance.service';
 import { AttendanceDto } from './dto/attendance.dto';
 import { AttendanceRegisterDto } from './dto/attendance-register.dto';
