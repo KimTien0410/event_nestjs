@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Google Login Demo</title>
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+      } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+
+      const firebaseConfig = {
+        apiKey: 'AIzaSyC2x1D0UhcOfakv1TqmOq-HXaZ4TyrOi38',
+        authDomain: 'eventmanagement-5d5e6.firebaseapp.com',
+        projectId: 'eventmanagement-5d5e6',
+        storageBucket: 'eventmanagement-5d5e6.firebasestorage.app',
+        messagingSenderId: '845740352059',
+        appId: '1:845740352059:web:59b0714e96e9cfef1bf21e',
+        measurementId: 'G-LNH89TJFLF',
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      async function loginWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        try {
+          const result = await signInWithPopup(auth, provider);
+
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const accessToken = credential.accessToken;
+
+          const idToken = await result.user.getIdToken();
+
+          const response = await fetch('http://localhost:8000/api/v1/auths/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken, accessToken }),
+          });
+
+          const data = await response.json();
+
+          document.getElementById('status').innerText =
+            'Đăng nhập thành công! ';
+        } catch (error) {
+          console.error('Error logging in with Google:', error);
+          document.getElementById('status').innerText = 'Đăng nhập thất bại!';
+        }
+      }
+
+      window.loginWithGoogle = loginWithGoogle;
+    </script>
+  </head>
+  <body>
+    <h1>Login Demo</h1>
+    <button onclick="loginWithGoogle()">Login with Google</button>
+    <div id="status"></div>
+  </body>
+</html>

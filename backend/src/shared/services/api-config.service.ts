@@ -19,7 +19,7 @@ export class ApiConfigService {
         const prod = this.isProduction;
 
         return {
-            host: this.getString('DB_HOST'),
+            host: 'database',
             port: this.getNumber('DB_PORT'),
             username: this.getString('DB_USERNAME'),
             password: this.getString('DB_PASSWORD'),
@@ -41,6 +41,14 @@ export class ApiConfigService {
     get googleConfig() {
         return {
             clientIds: this.getStringArray('GOOGLE_CLIENT_IDS'),
+        };
+    }
+
+    get firebaseConfig() {
+        return {
+            projectId: this.getString('FIREBASE_PROJECT_ID'),
+            clientEmail: this.getString('FIREBASE_CLIENT_EMAIL'),
+            privateKey: this.getString('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
         };
     }
 

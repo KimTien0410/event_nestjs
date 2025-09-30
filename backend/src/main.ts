@@ -38,7 +38,7 @@ async function bootstrap() {
 
   const dataSource = app.get(DataSource);
   addTransactionalDataSource(dataSource);
-
+  app.enableCors();
   await app.listen(configService.serverPort);
 }
 void bootstrap();
