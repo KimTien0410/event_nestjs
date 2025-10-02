@@ -11,7 +11,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
     }
     
   createTypeOrmOptions(): TypeOrmModuleOptions {
-      console.log("DB Config:", this.configService.dbConfig);
         return {
           type: 'postgres',
           dropSchema: false,

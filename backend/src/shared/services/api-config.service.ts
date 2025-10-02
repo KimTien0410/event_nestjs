@@ -19,7 +19,7 @@ export class ApiConfigService {
         const prod = this.isProduction;
 
         return {
-            host: 'database',
+            host: this.getString('DB_HOST').trim(),
             port: this.getNumber('DB_PORT'),
             username: this.getString('DB_USERNAME'),
             password: this.getString('DB_PASSWORD'),
