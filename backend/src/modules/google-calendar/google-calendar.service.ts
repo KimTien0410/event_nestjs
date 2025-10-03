@@ -9,13 +9,11 @@ import { EventStatus } from '../event/domain/event-status';
 import { Event } from '../event/domain/event';
 import { EventEntity } from '../event/entities/event.entity';
 import pLimit from 'p-limit';
+import { EventCreate } from '../event/domain/event-create';
 
 @Injectable()
 export class GoogleCalendarService {
-  constructor(
-    private readonly eventService: EventService,
-    private readonly attendanceService: AttendanceService,
-  ) { }
+  constructor(private readonly eventService: EventService) {}
 
   async importCalendar(
     userId: Uuid,
@@ -29,21 +27,20 @@ export class GoogleCalendarService {
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
     const now = new Date();
-    const oneYearLater = new Date();
-    oneYearLater.setFullYear(now.getFullYear() + 1);
+    const timeMax = new Date();
+    timeMax.setFullYear(now.getFullYear() + 1);
     const resCalendarList = await calendar.calendarList.list();
     const calendars = resCalendarList.data.items || [];
     const limit = pLimit(3);
 
-    const tasks = calendars.map((cal) =>
-      limit(async () => {
-        if (!cal.id) return [];
-
-        try {
+    const tasks = calendars
+      .filter((cal) => !!cal.id)
+      .map((cal) =>
+        limit(async () => {
           const eventsRes = await calendar.events.list({
-            calendarId: cal.id,
+            calendarId: cal.id!,
             timeMin: now.toISOString(),
-            timeMax: oneYearLater.toISOString(),
+            timeMax: timeMax.toISOString(),
             maxResults: 50,
             singleEvents: true,
             orderBy: 'startTime',
@@ -51,14 +48,11 @@ export class GoogleCalendarService {
 
           const events = eventsRes.data.items || [];
           return await this.processGoogleEvents(userId, events, now);
-        } catch (error) {
-          console.error(`Error fetching calendar ${cal.id}:`, error.message);
-          return [];
-        }
-      }),
-    );
+        }),
+      );
 
     const results = (await Promise.all(tasks)).flat();
+    
     return Event.fromEntities(results);
   }
 
@@ -70,28 +64,38 @@ export class GoogleCalendarService {
     const tasks = events
       .filter((event) => !!event.id)
       .map(async (event) => {
-        const eventEntity = await this.eventService.findByGoogleEventId(event.id!);
+        const eventEntity = await this.eventService.findByGoogleEventId(
+          event.id!,
+        );
 
         if (!eventEntity) {
-          return await this.eventService.createEventEntity({
-            googleEventId: event.id!,
-            title: event.summary || 'No title',
-            timeStart: event.start?.dateTime
-              ? new Date(event.start.dateTime)
-              : new Date(event.start?.date || now),
-            timeEnd: event.end?.dateTime
-              ? new Date(event.end.dateTime)
-              : new Date(event.end?.date || now),
-            location: event.location || '',
-            status: EventStatus.UPCOMING,
-            type: EventType.ONLINE,
-            capacity: 100,
-          });
+          const eventCreate = this.mapGoogleEventToEventCreate(event, now);
+          return await this.eventService.createEventEntity(eventCreate);
         }
 
         return eventEntity;
       });
 
     return Promise.all(tasks);
+  }
+
+  private mapGoogleEventToEventCreate(
+    event: calendar_v3.Schema$Event,
+    now: Date,
+  ): EventCreate {
+    return {
+      googleEventId: event.id!,
+      title: event.summary || 'No title',
+      timeStart: event.start?.dateTime
+        ? new Date(event.start.dateTime)
+        : new Date(event.start?.date || now),
+      timeEnd: event.end?.dateTime
+        ? new Date(event.end.dateTime)
+        : new Date(event.end?.date || now),
+      location: event.location || '',
+      status: EventStatus.UPCOMING,
+      type: EventType.ONLINE,
+      capacity: 100,
+    };
   }
 }

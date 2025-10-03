@@ -75,9 +75,7 @@ export class EventService {
   async findByGoogleEventId(
     googleEventId: string,
   ): Promise<EventEntity | null> {
-    return await this.eventRepository.findOneBy({
-      googleEventId: googleEventId,
-    });
+    return await this.eventRepository.findOneBy({googleEventId});
   }
 
   private static validateEventTime(timeStart: Date, timeEnd: Date) {
