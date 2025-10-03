@@ -20,6 +20,7 @@ import { KeycloakModule } from './modules/keycloak/keycloak.module';
 import { SnakeNamingStrategy } from './configuration/snake-naming.strategy';
 import { Type } from 'class-transformer';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
+import { GoogleCalendarModule } from './modules/google-calendar/google-calendar.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TypeOrmConfigService } from './database/typeorm-config.service';
     EventModule,
     AttendanceModule,
     IcsModule,
+    GoogleCalendarModule,
   ],
 
   providers: [
