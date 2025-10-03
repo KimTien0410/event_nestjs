@@ -1,12 +1,8 @@
 import 'reflect-metadata';
-
 import type { DataSourceOptions } from 'typeorm';
 import { DataSource } from 'typeorm';
-
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '../.env' });
-
-
 import { SnakeNamingStrategy } from '../configuration/snake-naming.strategy';
 
 export const AppDataSource = new DataSource({

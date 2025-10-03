@@ -1,21 +1,21 @@
-services:
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    image: backend
-    container_name: backend2
-    environment:
-      DB_HOST: database
-      KEYCLOAK_BASE_URL: http://keycloak:8080
-    restart: always
-    ports:
-      - "$PORT:$PORT"
-    depends_on:
-      - database
-      - keycloak
-    env_file:
-      - .env
+﻿services:
+  # backend:
+  #   build:
+  #     context: .
+  #     dockerfile: backend/Dockerfile
+  #   image: backend
+  #   container_name: backend2
+  #   environment:
+  #     DB_HOST: $DB_HOST
+  #     KEYCLOAK_BASE_URL: http://keycloak:8080
+  #   restart: always
+  #   ports:
+  #     - "$PORT:$PORT"
+  #   depends_on:
+  #     - database
+  #     - keycloak
+  #   env_file:
+  #     - .env
 
   database:
     build: postgres
