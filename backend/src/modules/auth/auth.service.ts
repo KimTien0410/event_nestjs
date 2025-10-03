@@ -1,3 +1,4 @@
+import { ApiConfigService } from './../../shared/services/api-config.service';
 import { UserUpdate } from './../user/domain/user-update';
 import { RegisterForm } from './domain/register-form';
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
@@ -14,6 +15,9 @@ import { jwtDecode } from 'jwt-decode';
 import { TokenPayload } from './domain/token-payload';
 import { User } from '../user/domain/user';
 import { UpdateProfileForm } from './domain/update-profile-form';
+import { GoogleTokenForm } from './domain/google-token-form';
+import { OAuth2Client } from 'google-auth-library';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +25,20 @@ export class AuthService {
     private readonly keycloakService: KeycloakService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) {}
+    private readonly apiConfigService: ApiConfigService,
+  ) {
+    if (admin.apps.length === 0) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: this.apiConfigService.firebaseConfig.projectId,
+          clientEmail: this.apiConfigService.firebaseConfig.clientEmail,
+          privateKey: (
+            this.apiConfigService.firebaseConfig.privateKey ?? ''
+          ).replace(/\\n/g, '\n'),
+        }),
+      });
+    }
+  }
 
   async register(registerForm: RegisterForm): Promise<AuthResult> {
     if (await this.userRepository.findOneBy({ email: registerForm.email })) {
@@ -67,7 +84,32 @@ export class AuthService {
     );
   }
 
-  async updateProfile(userId: Uuid, updateProfileForm: UpdateProfileForm): Promise<User> {
+  async googleLogin(googleTokenForm: GoogleTokenForm): Promise<AuthResult> {
+    const decodedToken = await admin
+      .auth()
+      .verifyIdToken(googleTokenForm.idToken);
+
+    const { uid, email, name, picture } = decodedToken;
+
+    if (!email) {
+      throw new BadRequestException('Email not found in token');
+    }
+
+    const keycloakToken = await this.keycloakService.googleLogin(
+      googleTokenForm.accessToken,
+    );
+
+    return await this.createTokenForUser(keycloakToken, {
+      firstName: name?.split(' ')[0],
+      lastName: name?.split(' ').slice(1).join(' '),
+      picture,
+    });
+  }
+
+  async updateProfile(
+    userId: Uuid,
+    updateProfileForm: UpdateProfileForm,
+  ): Promise<User> {
     return User.fromEntity(
       await this.userRepository.save({
         id: userId,

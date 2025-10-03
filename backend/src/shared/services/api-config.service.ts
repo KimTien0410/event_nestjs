@@ -44,6 +44,14 @@ export class ApiConfigService {
         };
     }
 
+    get firebaseConfig() {
+        return {
+            projectId: this.getString('FIREBASE_PROJECT_ID'),
+            clientEmail: this.getString('FIREBASE_CLIENT_EMAIL'),
+            privateKey: this.getString('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+        };
+    }
+
     get imageService() {
         return {
             storeDirectory: this.getString('IMAGE_DIRECTORY'),

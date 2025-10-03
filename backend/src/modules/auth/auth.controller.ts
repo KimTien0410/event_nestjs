@@ -18,14 +18,13 @@ import { CurrentUserDto } from './dto/current-user.dto';
 import { RequireLoggedIn } from '../../guards/role-container';
 import { AuthResultDto } from './dto/auth-result.dto';
 import { RefreshTokenFormDto } from './dto/refresh-token-form.dto';
-import { UserUpdateDto } from '../user/dto/user-update.dto';
-import { UpdateProfileForm } from './domain/update-profile-form';
 import { UpdateProfileFormDto } from './dto/update-profile-form.dto';
+import { GoogleTokenFormDto } from './dto/google-token-form.dto';
+import { GoogleTokenForm } from './domain/google-token-form';
 
 @ApiTags('Auths')
 @Controller('auths')
-export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+export class AuthController { constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   async register(@Body() registerDto: RegisterFormDto): Promise<AuthResultDto> {
@@ -43,6 +42,15 @@ export class AuthController {
     );
   }
 
+  @Post('google')
+  async googleLogin(@Body() googleTokenFormDto: GoogleTokenFormDto): Promise<AuthResultDto> {
+    return AuthResultDto.fromAuthResult(
+      await this.authService.googleLogin(
+        GoogleTokenFormDto.toGoogleTokenForm(googleTokenFormDto),
+      ),
+    );
+  }
+  
   @Post('refresh-token')
   async refreshToken(
     @Body() refreshTokenFormDto: RefreshTokenFormDto,

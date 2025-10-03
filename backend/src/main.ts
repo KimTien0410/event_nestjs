@@ -8,6 +8,8 @@ import { configureSwagger } from './configuration/config-swagger';
 import { configLogging } from './configuration/config-logging';
 import { SharedModule } from './shared/shared.module';
 import { ApiConfigService } from './shared/services/api-config.service';
+import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -38,7 +40,7 @@ async function bootstrap() {
 
   const dataSource = app.get(DataSource);
   addTransactionalDataSource(dataSource);
-
+  app.use('/', express.static(join(__dirname, '..', 'public')));
   await app.listen(configService.serverPort);
 }
 void bootstrap();
