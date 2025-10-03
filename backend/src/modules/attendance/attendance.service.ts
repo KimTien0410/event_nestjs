@@ -167,15 +167,13 @@ export class AttendanceService {
     userId: Uuid,
     eventId: Uuid,
   ): Promise<AttendanceEntity | null> {
-    return await this.attendanceRepository.findOne({
-      where: {
+    return await this.attendanceRepository.findOneBy({
         userId,
         eventId,
-      },
     });
   }
 
-  async findByUserId(userId: Uuid): Promise<AttendanceEntity[] | null> {
+  async findByUserId(userId: Uuid): Promise<AttendanceEntity[]> {
     return await this.attendanceRepository.find({
       where: { userId },
       relations: { event: true },
