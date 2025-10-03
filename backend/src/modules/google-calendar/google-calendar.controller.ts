@@ -19,7 +19,7 @@ export class GoogleCalendarController {
     @Body() googleCalendarImportDto: GoogleCalendarImportDto,
   ): Promise<EventDto[]> {
     return EventDto.fromDomains(
-      await this.googleCalendarService.importCalendarWithPLimit(
+      await this.googleCalendarService.importCalendar(
         user.id,
         GoogleCalendarImportDto.toGoogleCalendarImport(googleCalendarImportDto),
       ),

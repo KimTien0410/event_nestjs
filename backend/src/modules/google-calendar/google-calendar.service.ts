@@ -1,5 +1,5 @@
 import { GoogleCalendarImport } from './domain/google-calendar-import';
-import { AttendanceService } from './../attendance/attendance.service';
+import { AttendanceService } from '../attendance/attendance.service';
 import { Injectable } from '@nestjs/common';
 import { calendar_v3, google } from 'googleapis';
 import { EventService } from '../event/event.service';
@@ -15,9 +15,9 @@ export class GoogleCalendarService {
   constructor(
     private readonly eventService: EventService,
     private readonly attendanceService: AttendanceService,
-  ) {}
+  ) { }
 
-  async importCalendarWithPLimit(
+  async importCalendar(
     userId: Uuid,
     googleCalendarImport: GoogleCalendarImport,
   ): Promise<Event[]> {
@@ -50,8 +50,7 @@ export class GoogleCalendarService {
           });
 
           const events = eventsRes.data.items || [];
-          const entities = await this.processGoogleEvents(userId, events, now);
-          return entities.filter((e) => e !== null);
+          return await this.processGoogleEvents(userId, events, now);
         } catch (error) {
           console.error(`Error fetching calendar ${cal.id}:`, error.message);
           return [];
@@ -68,15 +67,14 @@ export class GoogleCalendarService {
     events: calendar_v3.Schema$Event[],
     now: Date,
   ): Promise<EventEntity[]> {
-    const entities = await Promise.all(
-      events.map(async (event) => {
-        if (!event.id) return null;
-
-        let eventEntity = await this.eventService.findByGoogleEventId(event.id);
+    const tasks = events
+      .filter((event) => !!event.id)
+      .map(async (event) => {
+        const eventEntity = await this.eventService.findByGoogleEventId(event.id!);
 
         if (!eventEntity) {
-          eventEntity = await this.eventService.createEventEntity({
-            googleEventId: event.id,
+          return await this.eventService.createEventEntity({
+            googleEventId: event.id!,
             title: event.summary || 'No title',
             timeStart: event.start?.dateTime
               ? new Date(event.start.dateTime)
@@ -91,22 +89,9 @@ export class GoogleCalendarService {
           });
         }
 
-        const attendanceExisting =
-          await this.attendanceService.findByUserAndEvent(
-            userId,
-            eventEntity.id,
-          );
-
-        if (!attendanceExisting) {
-          await this.attendanceService.register(userId, {
-            eventId: eventEntity.id,
-          });
-        }
-
         return eventEntity;
-      }),
-    );
+      });
 
-    return entities.filter((e): e is EventEntity => e !== null);
+    return Promise.all(tasks);
   }
 }

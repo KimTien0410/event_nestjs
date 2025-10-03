@@ -172,11 +172,4 @@ export class AttendanceService {
         eventId,
     });
   }
-
-  async findByUserId(userId: Uuid): Promise<AttendanceEntity[]> {
-    return await this.attendanceRepository.find({
-      where: { userId },
-      relations: { event: true },
-    });
-  }
 }
