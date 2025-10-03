@@ -30,7 +30,7 @@ export class EventService {
   }
 
   async createEventEntity(eventCreate: EventCreate): Promise<EventEntity>{
-    return await this.eventRepository.create(
+    return await this.eventRepository.save(
       EventCreate.toEntity(eventCreate)
     )
   }

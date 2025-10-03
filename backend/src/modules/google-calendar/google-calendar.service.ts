@@ -1,14 +1,14 @@
 import { GoogleCalendarImport } from './domain/google-calendar-import';
 import { AttendanceService } from './../attendance/attendance.service';
 import { Injectable } from '@nestjs/common';
-import { google } from 'googleapis';
+import { calendar_v3, google } from 'googleapis';
 import { EventService } from '../event/event.service';
 import { Uuid } from 'src/common/types';
 import { EventType } from '../event/domain/event-type';
 import { EventStatus } from '../event/domain/event-status';
 import { Event } from '../event/domain/event';
 import { EventEntity } from '../event/entities/event.entity';
-import { chunkArray } from 'src/utils/chunk-array.utils';
+import pLimit from 'p-limit';
 
 @Injectable()
 export class GoogleCalendarService {
@@ -17,7 +17,7 @@ export class GoogleCalendarService {
     private readonly attendanceService: AttendanceService,
   ) {}
 
-  async importCalendarBatch(
+  async importCalendarWithPLimit(
     userId: Uuid,
     googleCalendarImport: GoogleCalendarImport,
   ): Promise<Event[]> {
@@ -31,87 +31,82 @@ export class GoogleCalendarService {
     const now = new Date();
     const oneYearLater = new Date();
     oneYearLater.setFullYear(now.getFullYear() + 1);
-
     const resCalendarList = await calendar.calendarList.list();
     const calendars = resCalendarList.data.items || [];
+    const limit = pLimit(3);
 
-    const calendarBatches = chunkArray(calendars, 3);
+    const tasks = calendars.map((cal) =>
+      limit(async () => {
+        if (!cal.id) return [];
 
-    const allResults: EventEntity[] = [];
+        try {
+          const eventsRes = await calendar.events.list({
+            calendarId: cal.id,
+            timeMin: now.toISOString(),
+            timeMax: oneYearLater.toISOString(),
+            maxResults: 50,
+            singleEvents: true,
+            orderBy: 'startTime',
+          });
 
-    for (const batch of calendarBatches) {
-      const batchEventsNested = await Promise.all(
-        batch.map(async (cal) => {
-          if (!cal.id) return [];
+          const events = eventsRes.data.items || [];
+          const entities = await this.processGoogleEvents(userId, events, now);
+          return entities.filter((e) => e !== null);
+        } catch (error) {
+          console.error(`Error fetching calendar ${cal.id}:`, error.message);
+          return [];
+        }
+      }),
+    );
 
-          try {
-            const eventsRes = await calendar.events.list({
-              calendarId: cal.id,
-              timeMin: now.toISOString(),
-              timeMax: oneYearLater.toISOString(),
-              maxResults: 50,
-              singleEvents: true,
-              orderBy: 'startTime',
-            });
+    const results = (await Promise.all(tasks)).flat();
+    return Event.fromEntities(results);
+  }
 
-            const events = eventsRes.data.items || [];
+  private async processGoogleEvents(
+    userId: Uuid,
+    events: calendar_v3.Schema$Event[],
+    now: Date,
+  ): Promise<EventEntity[]> {
+    const entities = await Promise.all(
+      events.map(async (event) => {
+        if (!event.id) return null;
 
-            return Promise.all(
-              events.map(async (event) => {
-                if (!event.id) return null;
+        let eventEntity = await this.eventService.findByGoogleEventId(event.id);
 
-                let eventEntity = await this.eventService.findByGoogleEventId(
-                  event.id,
-                );
+        if (!eventEntity) {
+          eventEntity = await this.eventService.createEventEntity({
+            googleEventId: event.id,
+            title: event.summary || 'No title',
+            timeStart: event.start?.dateTime
+              ? new Date(event.start.dateTime)
+              : new Date(event.start?.date || now),
+            timeEnd: event.end?.dateTime
+              ? new Date(event.end.dateTime)
+              : new Date(event.end?.date || now),
+            location: event.location || '',
+            status: EventStatus.UPCOMING,
+            type: EventType.ONLINE,
+            capacity: 100,
+          });
+        }
 
-                if (!eventEntity) {
-                  eventEntity = await this.eventService.createEventEntity({
-                    googleEventId: event.id,
-                    title: event.summary || 'No title',
-                    timeStart: event.start?.dateTime
-                      ? new Date(event.start.dateTime)
-                      : new Date(event.start?.date || now),
-                    timeEnd: event.end?.dateTime
-                      ? new Date(event.end.dateTime)
-                      : new Date(event.end?.date || now),
-                    location: event.location || '',
-                    status: EventStatus.UPCOMING,
-                    type: EventType.ONLINE,
-                    capacity: 100,
-                  });
-                }
+        const attendanceExisting =
+          await this.attendanceService.findByUserAndEvent(
+            userId,
+            eventEntity.id,
+          );
 
-                const attendanceExisting =
-                  await this.attendanceService.findByUserAndEvent(
-                    userId,
-                    eventEntity.id,
-                  );
+        if (!attendanceExisting) {
+          await this.attendanceService.register(userId, {
+            eventId: eventEntity.id,
+          });
+        }
 
-                if (!attendanceExisting) {
-                  await this.attendanceService.register(userId, {
-                    eventId: eventEntity.id,
-                  });
-                }
+        return eventEntity;
+      }),
+    );
 
-                return eventEntity;
-              }),
-            );
-          } catch (error) {
-            console.error(`Error fetching calendar ${cal.id}:`, error.message);
-            return [];
-          }
-        }),
-      );
-
-      const batchResults = batchEventsNested
-        .flat(2)
-        .filter((e): e is EventEntity => e !== null);
-
-      allResults.push(...batchResults);
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    return Event.fromEntities(allResults);
+    return entities.filter((e): e is EventEntity => e !== null);
   }
 }

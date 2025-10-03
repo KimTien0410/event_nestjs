@@ -19,7 +19,7 @@ export class GoogleCalendarController {
     @Body() googleCalendarImportDto: GoogleCalendarImportDto,
   ): Promise<EventDto[]> {
     const userId: Uuid = user.id;
-    const events = await this.googleCalendarService.importCalendarBatch(
+    const events = await this.googleCalendarService.importCalendarWithPLimit(
       userId,
       GoogleCalendarImportDto.toGoogleCalendarImport(googleCalendarImportDto),
     );
