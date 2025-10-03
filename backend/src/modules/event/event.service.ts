@@ -26,11 +26,13 @@ export class EventService {
   async create(eventCreate: EventCreate): Promise<Event> {
     EventService.validateEventTime(eventCreate.timeStart, eventCreate.timeEnd);
 
-    return Event.fromEntity(
-      await this.eventRepository.save(
-        this.eventRepository.create(EventCreate.toEntity(eventCreate)),
-      ),
-    );
+    return Event.fromEntity(await this.createEventEntity(eventCreate));
+  }
+
+  async createEventEntity(eventCreate: EventCreate): Promise<EventEntity>{
+    return await this.eventRepository.save(
+      EventCreate.toEntity(eventCreate)
+    )
   }
 
   async findAll(): Promise<Event[]> {
@@ -68,6 +70,12 @@ export class EventService {
     }
 
     return eventEntity;
+  }
+
+  async findByGoogleEventId(googleEventId: string): Promise<EventEntity | null> {
+    return await this.eventRepository.findOne({
+      where: {googleEventId: googleEventId}
+    })
   }
 
   private static validateEventTime(timeStart: Date, timeEnd: Date) {

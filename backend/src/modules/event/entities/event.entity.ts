@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -15,6 +16,10 @@ import { AbstractEntity } from '../../../common/abstract.entity';
 export class EventEntity extends AbstractEntity {
   @Column()
   title: string;
+
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  googleEventId: string | null;
 
   @Column({ nullable: true, type: 'text' })
   description: string | null;
@@ -48,6 +53,10 @@ export class EventEntity extends AbstractEntity {
   @Column()
   capacity: number;
 
-  @OneToMany(() => AttendanceEntity, (attendanceEntity) => attendanceEntity.event, { onDelete: 'CASCADE'} )
+  @OneToMany(
+    () => AttendanceEntity,
+    (attendanceEntity) => attendanceEntity.event,
+    { onDelete: 'CASCADE' },
+  )
   attendances: AttendanceEntity[];
 }

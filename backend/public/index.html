@@ -24,6 +24,9 @@
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
 
+      const loginBtn = document.getElementById('loginBtn');
+      const importBtn = document.getElementById('importBtn');
+
       async function loginWithGoogle() {
         const provider = new GoogleAuthProvider();
         try {
@@ -34,28 +37,79 @@
 
           const idToken = await result.user.getIdToken();
 
-          const response = await fetch('http://localhost:8000/api/v1/auths/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken, accessToken }),
-          });
+          const response = await fetch(
+            'http://localhost:8000/api/v1/auths/google',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken, accessToken }),
+            },
+          );
 
           const data = await response.json();
 
-          document.getElementById('status').innerText =
+          document.getElementById('login-status').innerText =
             'Đăng nhập thành công! ';
+
+          localStorage.setItem('jwtToken', data.token.accessToken);
+
+          importBtn.style.display = 'block';
+          loginBtn.style.display = 'none';
         } catch (error) {
           console.error('Error logging in with Google:', error);
-          document.getElementById('status').innerText = 'Đăng nhập thất bại!';
+          document.getElementById('login-status').innerText =
+            'Đăng nhập thất bại!';
         }
       }
 
-      window.loginWithGoogle = loginWithGoogle;
+      loginBtn.addEventListener('click', loginWithGoogle);
+
+      async function importCalendar() {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/calendar.readonly');
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const accessToken =
+            GoogleAuthProvider.credentialFromResult(result).accessToken;
+          const jwtToken = localStorage.getItem('jwtToken');
+
+          const response = await fetch(
+            'http://localhost:8000/api/v1/google-calendar/import',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${jwtToken}`,
+              },
+              body: JSON.stringify({
+                accessToken: accessToken,
+              }),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error('Import failed: ' + response.statusText);
+          }
+
+          const data = await response.json();
+
+          document.getElementById('import-status').innerText =
+            'Import thành công!';
+        } catch (err) {
+          console.error('Error importing:', err);
+          document.getElementById('import-status').innerText =
+            'Import thất bại!';
+        }
+      }
+
+      importBtn.addEventListener('click', importCalendar);
     </script>
   </head>
   <body>
-    <h1>Login Demo</h1>
-    <button onclick="loginWithGoogle()">Login with Google</button>
-    <div id="status"></div>
+    <h1>Login with Google</h1>
+    <button id="loginBtn">Login with Google</button>
+    <div id="login-status"></div>
+    <button id="importBtn" style="display: none">Import calendar!</button>
+    <div id="import-status"></div>
   </body>
 </html>

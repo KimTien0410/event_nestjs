@@ -5,6 +5,8 @@ import { EventType } from 'src/modules/event/domain/event-type';
 export class EventCreate {
   readonly title: string;
 
+  readonly googleEventId?: string;
+
   readonly description?: string;
 
   readonly timeStart: Date;
@@ -24,6 +26,7 @@ export class EventCreate {
   static toEntity(eventCreate: EventCreate): Partial<EventEntity> {
     return {
       title: eventCreate.title,
+      googleEventId: eventCreate.googleEventId,
       description: eventCreate.description,
       timeStart: eventCreate.timeStart,
       timeEnd: eventCreate.timeEnd,
