@@ -18,11 +18,11 @@ export class GoogleCalendarController {
     @AuthUser() user: UserEntity,
     @Body() googleCalendarImportDto: GoogleCalendarImportDto,
   ): Promise<EventDto[]> {
-    const userId: Uuid = user.id;
-    const events = await this.googleCalendarService.importCalendarWithPLimit(
-      userId,
-      GoogleCalendarImportDto.toGoogleCalendarImport(googleCalendarImportDto),
+    return EventDto.fromDomains(
+      await this.googleCalendarService.importCalendarWithPLimit(
+        user.id,
+        GoogleCalendarImportDto.toGoogleCalendarImport(googleCalendarImportDto),
+      ),
     );
-    return EventDto.fromDomains(events);
   }
 }

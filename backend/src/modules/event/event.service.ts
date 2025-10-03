@@ -73,8 +73,8 @@ export class EventService {
   }
 
   async findByGoogleEventId(googleEventId: string): Promise<EventEntity | null> {
-    return await this.eventRepository.findOne({
-      where: {googleEventId: googleEventId}
+    return await this.eventRepository.findOneBy({
+     googleEventId: googleEventId
     })
   }
 
