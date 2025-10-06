@@ -1,31 +1,26 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventCreateDto } from './dto/event-create.dto';
-import { EventUpdateDto } from './dto/event-update.dto';
 import { EventCreate } from './domain/event-create';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../user/entities/user.entity';
 import { EventEntity } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { Event } from './domain/event';
 import { EventUpdate } from './domain/event-update';
 import { AttendanceStatus } from '../attendance/domain/attendance-status';
 import { Uuid } from 'src/common/types';
-import { AttendanceService } from '../attendance/attendance.service';
 import { createPdfFromEvents } from 'src/utils/pdf.utils';
+import { QueryBus } from '@nestjs/cqrs';
+import { GetEventsByUserQuery } from '../attendance/queries/impl/get-events-by-user.query';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(EventEntity)
     private readonly eventRepository: Repository<EventEntity>,
-    @Inject(forwardRef(() => AttendanceService) )
-    private readonly attendanceService: AttendanceService
+    private readonly queryBus: QueryBus,
   ) {}
 
   async create(eventCreate: EventCreate): Promise<Event> {
@@ -80,17 +75,26 @@ export class EventService {
   async findByGoogleEventId(
     googleEventId: string,
   ): Promise<EventEntity | null> {
-    return await this.eventRepository.findOneBy({googleEventId});
+    return await this.eventRepository.findOneBy({ googleEventId });
   }
 
-  async exportEventsPdf(userId: Uuid): Promise<Buffer>{
-    const events = await this.attendanceService.findByUserId(userId);
+  async exportEventsPdf(userId: Uuid): Promise<Buffer> {
+    const attendances = await this.queryBus.execute(
+      new GetEventsByUserQuery(userId),
+    );
 
-    if (!events || events.length === 0) {
+    if (!attendances || attendances.length === 0) {
       throw new Error('No events found for this user');
     }
 
-    return await createPdfFromEvents(events);
+    const events = attendances.map((a) => a.event).filter((e) => !!e);
+
+    const uniqueEvents = events.filter(
+      (event, index, self) =>
+        index === self.findIndex((e) => e.id === event.id),
+    );
+
+    return await createPdfFromEvents(uniqueEvents);
   }
 
   private static validateEventTime(timeStart: Date, timeEnd: Date) {

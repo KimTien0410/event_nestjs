@@ -1,13 +1,11 @@
 import {
   Injectable,
   BadRequestException,
-  Inject,
   NotFoundException,
   ConflictException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, EntityManager } from 'typeorm';
+import { Repository} from 'typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
 import { AttendanceRegister } from './domain/attendace-register';
 import { Attendance } from './domain/attendance';
@@ -15,20 +13,20 @@ import { AttendanceStatus } from './domain/attendance-status';
 import { EventStatus } from '../event/domain/event-status';
 import { AttendanceCancel } from './domain/attendance-cancel';
 import { UserTopRegistration } from '../user/domain/user-top-registration';
-import { UserEntity } from '../user/entities/user.entity';
 import { Transactional } from 'typeorm-transactional';
-import { EventService } from '../event/event.service';
 import { Event } from '../event/domain/event';
 import type { Uuid } from 'src/common/types';
 import { EventEntity } from '../event/entities/event.entity';
+import { QueryBus } from '@nestjs/cqrs';
+import { FindEventOrThrowQuery } from '../event/queries/impl/find-event-or-throw.query';
+import { GetCurrentAttendantCountQuery } from '../event/queries/impl/get-current-attendance-count.query';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectRepository(AttendanceEntity)
     private readonly attendanceRepository: Repository<AttendanceEntity>,
-    @Inject(forwardRef(() => EventService))
-    private readonly eventService: EventService,
+    private readonly queryBus: QueryBus
   ) {}
 
   @Transactional()
@@ -36,9 +34,10 @@ export class AttendanceService {
     userId: Uuid,
     attendanceRegister: AttendanceRegister,
   ): Promise<Attendance> {
+    const eventId = attendanceRegister.eventId;
     const existing = await this.attendanceRepository.findOneBy({
       userId: userId,
-      eventId: attendanceRegister.eventId,
+      eventId: eventId,
       status: AttendanceStatus.REGISTERED,
     });
 
@@ -50,7 +49,7 @@ export class AttendanceService {
 
     const attendanceCancelled = await this.attendanceRepository.findOneBy({
       userId: userId,
-      eventId: attendanceRegister.eventId,
+      eventId: eventId,
       status: AttendanceStatus.CANCELLED,
     });
 
@@ -61,18 +60,14 @@ export class AttendanceService {
     }
 
     // Check if the event is still open for registration
-    const event = await this.eventService.findEventOrThrow(
-      attendanceRegister.eventId,
-    );
+    const event = await this.queryBus.execute(new FindEventOrThrowQuery(eventId));
 
     if (event.status !== EventStatus.UPCOMING) {
       throw new BadRequestException('Event is not open for registration');
     }
 
     // Check if the event has reached its capacity
-    const currentAttendants = await this.eventService.getCurrentAttendantCount(
-      attendanceRegister.eventId,
-    );
+    const currentAttendants = await this.queryBus.execute(new GetCurrentAttendantCountQuery(eventId));
 
     if (currentAttendants >= event.capacity) {
       throw new BadRequestException('Event has reached its capacity');
@@ -91,9 +86,9 @@ export class AttendanceService {
     userId: Uuid,
     attendanceCancel: AttendanceCancel,
   ): Promise<void> {
-    const event = await this.eventService.findEventOrThrow(
+    const event = await this.queryBus.execute(new FindEventOrThrowQuery(
       attendanceCancel.eventId,
-    );
+    ));
     const attendance = await this.findByUserAndEventOrThrow(
       userId,
       attendanceCancel.eventId,
