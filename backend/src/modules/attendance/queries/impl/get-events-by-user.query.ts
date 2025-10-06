@@ -1,5 +1,5 @@
-import { Uuid } from "src/common/types";
+import { Uuid } from 'src/common/types';
 
-export class GetEventsByUserQuery{
-    constructor(public readonly userId: Uuid){}
+export class GetEventsByUserQuery {
+  constructor(public readonly userId: Uuid) {}
 }

@@ -18,7 +18,9 @@ export class GetCurrentAttendantCountHandler
     const { eventId } = query;
     return this.eventRepository.countBy({
       id: eventId,
-      attendances: { status: AttendanceStatus.REGISTERED },
+      attendances: {
+        status: AttendanceStatus.REGISTERED,
+      },
     });
   }
 }

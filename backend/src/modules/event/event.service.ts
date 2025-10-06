@@ -79,20 +79,20 @@ export class EventService {
   }
 
   async exportEventsPdf(userId: Uuid): Promise<Buffer> {
-    const attendances = await this.queryBus.execute(
+    const events = await this.queryBus.execute(
       new GetEventsByUserQuery(userId),
     );
 
-    if (!attendances || attendances.length === 0) {
+    if (!events || events.length === 0) {
       throw new Error('No events found for this user');
     }
 
-    const events = attendances.map((a) => a.event).filter((e) => !!e);
-
-    const uniqueEvents = events.filter(
-      (event, index, self) =>
-        index === self.findIndex((e) => e.id === event.id),
-    );
+    const seen = new Set();
+    const uniqueEvents = events.filter((event) => {
+      if (seen.has(event.id)) return false;
+      seen.add(event.id);
+      return true;
+    });
 
     return await createPdfFromEvents(uniqueEvents);
   }

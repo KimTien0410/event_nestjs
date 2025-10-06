@@ -15,9 +15,15 @@ export class GetEventsByUserHandler
 
   async execute(query: GetEventsByUserQuery) {
     const { userId } = query;
-    return await this.attendanceRepository.find({
-      where: { userId },
-      relations: ['event'],
+    const attendances = await this.attendanceRepository.find({
+      where: {
+        userId,
+      },
+      relations: {
+        event: true,
+      },
     });
+
+    return attendances.map((attendance) => attendance.event);
   }
 }

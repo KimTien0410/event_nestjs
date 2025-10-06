@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository} from 'typeorm';
+import { Repository } from 'typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
 import { AttendanceRegister } from './domain/attendace-register';
 import { Attendance } from './domain/attendance';
@@ -26,7 +26,7 @@ export class AttendanceService {
   constructor(
     @InjectRepository(AttendanceEntity)
     private readonly attendanceRepository: Repository<AttendanceEntity>,
-    private readonly queryBus: QueryBus
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Transactional()
@@ -60,14 +60,18 @@ export class AttendanceService {
     }
 
     // Check if the event is still open for registration
-    const event = await this.queryBus.execute(new FindEventOrThrowQuery(eventId));
+    const event = await this.queryBus.execute(
+      new FindEventOrThrowQuery(eventId),
+    );
 
     if (event.status !== EventStatus.UPCOMING) {
       throw new BadRequestException('Event is not open for registration');
     }
 
     // Check if the event has reached its capacity
-    const currentAttendants = await this.queryBus.execute(new GetCurrentAttendantCountQuery(eventId));
+    const currentAttendants = await this.queryBus.execute(
+      new GetCurrentAttendantCountQuery(eventId),
+    );
 
     if (currentAttendants >= event.capacity) {
       throw new BadRequestException('Event has reached its capacity');
@@ -86,9 +90,9 @@ export class AttendanceService {
     userId: Uuid,
     attendanceCancel: AttendanceCancel,
   ): Promise<void> {
-    const event = await this.queryBus.execute(new FindEventOrThrowQuery(
-      attendanceCancel.eventId,
-    ));
+    const event = await this.queryBus.execute(
+      new FindEventOrThrowQuery(attendanceCancel.eventId),
+    );
     const attendance = await this.findByUserAndEventOrThrow(
       userId,
       attendanceCancel.eventId,
@@ -173,7 +177,9 @@ export class AttendanceService {
 
   async findByUserId(userId: Uuid): Promise<EventEntity[]> {
     const attendances = await this.attendanceRepository.find({
-      where: { userId },
+      where: {
+        userId,
+      },
       relations: {
         event: true,
       },
