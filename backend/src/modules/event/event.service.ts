@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -15,12 +16,16 @@ import { Event } from './domain/event';
 import { EventUpdate } from './domain/event-update';
 import { AttendanceStatus } from '../attendance/domain/attendance-status';
 import { Uuid } from 'src/common/types';
+import { AttendanceService } from '../attendance/attendance.service';
+import { createPdfFromEvents } from 'src/utils/pdf.utils';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(EventEntity)
     private readonly eventRepository: Repository<EventEntity>,
+    @Inject(forwardRef(() => AttendanceService) )
+    private readonly attendanceService: AttendanceService
   ) {}
 
   async create(eventCreate: EventCreate): Promise<Event> {
@@ -76,6 +81,16 @@ export class EventService {
     googleEventId: string,
   ): Promise<EventEntity | null> {
     return await this.eventRepository.findOneBy({googleEventId});
+  }
+
+  async exportEventsPdf(userId: Uuid): Promise<Buffer>{
+    const events = await this.attendanceService.findByUserId(userId);
+
+    if (!events || events.length === 0) {
+      throw new Error('No events found for this user');
+    }
+
+    return await createPdfFromEvents(events);
   }
 
   private static validateEventTime(timeStart: Date, timeEnd: Date) {

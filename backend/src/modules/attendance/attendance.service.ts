@@ -4,6 +4,7 @@ import {
   Inject,
   NotFoundException,
   ConflictException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager } from 'typeorm';
@@ -19,12 +20,14 @@ import { Transactional } from 'typeorm-transactional';
 import { EventService } from '../event/event.service';
 import { Event } from '../event/domain/event';
 import type { Uuid } from 'src/common/types';
+import { EventEntity } from '../event/entities/event.entity';
 
 @Injectable()
 export class AttendanceService {
   constructor(
     @InjectRepository(AttendanceEntity)
     private readonly attendanceRepository: Repository<AttendanceEntity>,
+    @Inject(forwardRef(() => EventService))
     private readonly eventService: EventService,
   ) {}
 
@@ -168,8 +171,19 @@ export class AttendanceService {
     eventId: Uuid,
   ): Promise<AttendanceEntity | null> {
     return await this.attendanceRepository.findOneBy({
-        userId,
-        eventId,
+      userId,
+      eventId,
     });
+  }
+
+  async findByUserId(userId: Uuid): Promise<EventEntity[]> {
+    const attendances = await this.attendanceRepository.find({
+      where: { userId },
+      relations: {
+        event: true,
+      },
+    });
+
+    return attendances.map((attendance) => attendance.event);
   }
 }
