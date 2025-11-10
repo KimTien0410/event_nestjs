@@ -3,17 +3,18 @@ import { AttendanceService } from './attendance.service';
 import { AttendanceController } from './attendance.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttendanceEntity } from './entities/attendance.entity';
-import { EventModule } from '../event/event.module';
 import { UserModule } from '../user/user.module';
+import { CqrsModule } from '@nestjs/cqrs';
+import { GetEventsByUserHandler } from './queries/handlers/get-events-by-user.handler';
 
 @Module({
-  imports: [TypeOrmModule.forFeature(
-    [AttendanceEntity]),
-    EventModule,
-    UserModule
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([AttendanceEntity]),
+    UserModule,
   ],
   controllers: [AttendanceController],
-  providers: [AttendanceService],
+  providers: [AttendanceService, GetEventsByUserHandler],
   exports: [AttendanceService],
 })
 export class AttendanceModule {}

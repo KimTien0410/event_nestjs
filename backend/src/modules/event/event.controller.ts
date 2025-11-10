@@ -8,6 +8,7 @@ import {
   Put,
   HttpStatus,
   HttpCode,
+  Res,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { EventCreateDto } from './dto/event-create.dto';
@@ -15,6 +16,9 @@ import { EventUpdateDto } from './dto/event-update.dto';
 import { EventDto } from './dto/event.dto';
 import type { Uuid } from 'src/common/types';
 import { RequireAdmin, RequireLoggedIn } from 'src/guards/role-container';
+import { UserEntity } from '../user/entities/user.entity';
+import { AuthUser } from 'src/decorator/auth-user.decorator';
+import type { Response } from 'express';
 
 @Controller('events')
 export class EventController {
@@ -59,5 +63,15 @@ export class EventController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: Uuid) {
     return this.eventService.remove(id);
+  }
+
+  @Get('export/pdf')
+  @RequireLoggedIn()
+  async exportPdf(@AuthUser() user: UserEntity, @Res() res: Response) {
+    const pdfBuffer = await this.eventService.exportEventsPdf(user.id);
+
+     res.setHeader('Content-Type', 'application/pdf');
+     res.setHeader('Content-Disposition', 'attachment; filename="events.pdf"');
+     res.send(pdfBuffer);
   }
 }

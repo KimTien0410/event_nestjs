@@ -1,16 +1,12 @@
-import { Attendance } from './domain/attendance';
 import {
   Controller,
   Get,
   Post,
   Body,
   Patch,
-  Param,
-  Delete,
   HttpStatus,
   HttpCode,
   Query,
-  Req,
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { AttendanceDto } from './dto/attendance.dto';
